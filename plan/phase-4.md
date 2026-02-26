@@ -30,7 +30,7 @@
 - Props: `items: Array<{ title: string; content: string }>`, `allowMultiple: boolean`
 - `"use client"` — manages open/close state
 - SSR: renders all items closed (or first open)
-- Files: `src/components/cms/interactive/Accordion.tsx`, update `registry.ts`
+- Files: `src/components/cms/interactive/Accordion.tsx`, update `src/components/cms/interactive/index.ts`
 - Depends on: `4.1.1`
 - **Unit tests** (`tests/unit/components/interactive/accordion.test.tsx`):
   - Renders all item titles
@@ -41,7 +41,7 @@
 - Props: `tabs: Array<{ label: string; content: string }>`, `defaultTab: number`
 - `"use client"` — manages active tab state
 - SSR: renders first (or default) tab content
-- Files: `src/components/cms/interactive/Tabs.tsx`, update `registry.ts`
+- Files: `src/components/cms/interactive/Tabs.tsx`, update `src/components/cms/interactive/index.ts`
 - Depends on: `4.1.1`
 - **Unit tests** (`tests/unit/components/interactive/tabs.test.tsx`):
   - Renders all tab labels as clickable elements
@@ -52,7 +52,7 @@
 - Props: `slides: Array<{ image: string; alt: string; caption?: string }>`, `autoplay: boolean`, `interval: number`
 - `"use client"` — manages current slide, autoplay timer
 - SSR: renders first slide
-- Files: `src/components/cms/interactive/Carousel.tsx`, update `registry.ts`
+- Files: `src/components/cms/interactive/Carousel.tsx`, update `src/components/cms/interactive/index.ts`
 - Depends on: `4.1.1`
 - **Unit tests** (`tests/unit/components/interactive/carousel.test.tsx`):
   - Renders first slide image with correct `src` and `alt`
@@ -63,7 +63,7 @@
 - Props: `trigger: { label: string; variant?: string }`, children rendered as modal body
 - `"use client"` — manages open/close state
 - SSR: renders trigger button, modal content hidden
-- Files: `src/components/cms/interactive/Modal.tsx`, update `registry.ts`
+- Files: `src/components/cms/interactive/Modal.tsx`, update `src/components/cms/interactive/index.ts`
 - Depends on: `4.1.1`
 - **Unit tests** (`tests/unit/components/interactive/modal.test.tsx`):
   - Renders trigger button with correct label text
@@ -106,38 +106,57 @@
 
 ---
 
-## Step 4.4 — Contact Form Add-on `[DEV-2]` `[PARALLEL with 4.5, 4.6]`
+## Step 4.4 — Forms Add-on (Generic Form Builder) `[DEV-2]` `[PARALLEL with 4.5, 4.6]`
 
-### Task 4.4.1 — ContactForm component
-- Props: `fields: Array<{ name, label, type, required }>`, `submitLabel`, `successMessage`
+### Task 4.4.1 — FormBuilder component
+- Generic form component that renders any form from a field schema — replaces a hardcoded contact form with a reusable builder
+- Props: `formId: string`, `fields: Array<{ name, label, type, required, options?, placeholder?, validation? }>`, `submitLabel`, `successMessage`
+- Supported field types: `text`, `email`, `tel`, `textarea`, `select`, `checkbox`, `hidden`
 - `"use client"` — manages form state, validation, submission
-- Posts to `/api/addons/contact-form`
-- Files: `src/lib/addons/contact-form/components/ContactForm.tsx`
+- Posts to `/api/addons/forms/[formId]`
+- Files: `src/lib/addons/forms/components/FormBuilder.tsx`
 - Depends on: `4.3.2`
-- **Unit tests** (`tests/unit/addons/contact-form/contact-form.test.tsx`):
+- **Unit tests** (`tests/unit/addons/forms/form-builder.test.tsx`):
   - Renders a `<form>` element
   - Renders input fields matching the `fields` prop
   - Required fields have the `required` attribute
   - Submit button displays `submitLabel` text
-  - Form renders correct input `type` (text, email, textarea) per field config
+  - Renders correct input `type` (text, email, tel, textarea, select, checkbox) per field config
+  - `select` type renders `<select>` with `<option>` elements from `options` prop
+  - `placeholder` prop applies to text/email/tel/textarea fields
+  - `hidden` type renders `<input type="hidden">`
 
-### Task 4.4.2 — Contact form submission API
-- POST `/api/addons/contact-form` — validates tenant has addon enabled, sends email (or logs)
-- Files: `src/app/api/addons/contact-form/route.ts`
+### Task 4.4.2 — Form submission API
+- POST `/api/addons/forms/[formId]` — validates tenant has addon enabled, validates fields against schema, sends email (or logs)
+- **Apply rate limiting**: this is a public-facing endpoint — use strict limits (e.g., 5 submissions per 60s per IP) via the rate limiter from Phase 2, Task 2.1.4
+- Per-tenant form config (recipient email, success redirect, etc.) stored in `tenant_addon_configs`
+- Files: `src/app/api/addons/forms/[formId]/route.ts`
 - Depends on: `4.4.1`
-- **Unit tests** (`tests/unit/api/addons/contact-form.test.ts`):
+- **Unit tests** (`tests/unit/api/addons/forms/form-submission.test.ts`):
   - POST with valid data and addon enabled returns 200
   - POST with addon disabled for tenant returns 403
   - POST with missing required fields returns 400
   - POST with unknown tenant returns 404
+  - POST with unknown formId returns 404
+  - Rapid repeated POST requests from the same IP return 429 after exceeding the limit
 
-### Task 4.4.3 — Register contact form addon
-- Create addon module, register in addon registry
-- Files: `src/lib/addons/contact-form/index.ts`, update `src/lib/addons/registry.ts`
+### Task 4.4.3 — Register forms addon
+- Create addon module, register `FormBuilder` component in addon registry
+- Files: `src/lib/addons/forms/index.ts`, update `src/lib/addons/registry.ts`
 - Depends on: `4.4.1`, `4.4.2`
-- **Unit tests** (`tests/unit/addons/contact-form/registration.test.ts`):
-  - After registration, `ContactForm` component exists in the component registry
+- **Unit tests** (`tests/unit/addons/forms/registration.test.ts`):
+  - After registration, `FormBuilder` component exists in the component registry
   - Addon metadata has correct key and name
+
+### Task 4.4.4 — ContactForm convenience wrapper
+- Thin wrapper around `FormBuilder` with a preset field schema for contact forms (name, email, message)
+- Props: `recipientEmail?`, `submitLabel?`, `successMessage?`, `additionalFields?: Array<FieldConfig>`
+- Files: `src/lib/addons/forms/components/ContactForm.tsx`
+- Depends on: `4.4.1`
+- **Unit tests** (`tests/unit/addons/forms/contact-form.test.tsx`):
+  - Renders name, email, and message fields by default
+  - `additionalFields` appends extra fields after defaults
+  - Passes through `submitLabel` and `successMessage` to FormBuilder
 
 ---
 
@@ -191,9 +210,39 @@
 
 ---
 
-## Step 4.7 — Admin Add-on Management `[DEV-5]` `[PARALLEL with 4.4, 4.5, 4.6]`
+## Step 4.7 — Analytics Add-on `[DEV-6]` `[PARALLEL with 4.4, 4.5, 4.6]`
 
-### Task 4.7.1 — Addon toggle API
+### Task 4.7.1 — Analytics script injection
+- Injects analytics tracking script (GA4, Plausible, or custom) into tenant pages via the addon system
+- Per-tenant config: `provider` (ga4 | plausible | custom), `trackingId`, `customScript?`
+- The addon registers no visible components — it hooks into the tenant layout to inject a `<script>` tag
+- Files: `src/lib/addons/analytics/index.ts`
+- Depends on: `4.3.2`
+- **Unit tests** (`tests/unit/addons/analytics/analytics.test.ts`):
+  - GA4 provider generates correct `gtag.js` script tag with tracking ID
+  - Plausible provider generates correct `<script data-domain>` tag
+  - Custom provider injects the raw `customScript` string
+  - Missing `trackingId` renders nothing (does not inject broken script)
+  - Addon metadata has correct key and name
+
+### Task 4.7.2 — Register analytics addon
+- Files: `src/lib/addons/analytics/index.ts`, update `src/lib/addons/registry.ts`
+- Depends on: `4.7.1`
+- **Unit tests** (`tests/unit/addons/analytics/registration.test.ts`):
+  - After registration, analytics addon exists in the addon registry
+  - Addon has no components (components map is empty or undefined)
+
+### Task 4.7.3 — Integrate analytics into tenant layout
+- If analytics addon is enabled for tenant, inject the script tag into `<head>` via the tenant layout
+- Files: update `src/app/(tenant)/layout.tsx`
+- Depends on: `4.7.2`
+- Testing covered by Phase 4 Playwright tests
+
+---
+
+## Step 4.8 — Admin Add-on Management `[DEV-5]` `[PARALLEL with 4.4, 4.5, 4.6, 4.7]`
+
+### Task 4.8.1 — Addon toggle API
 - POST `/api/admin/addons/toggle` — body: `{ tenantId, addonKey, enabled }`
 - Files: `src/app/api/admin/addons/route.ts`
 - Depends on: Step 4.3
@@ -203,18 +252,18 @@
   - POST with unknown addon key returns 404
   - POST without auth returns 401
 
-### Task 4.7.2 — Addon manager UI
+### Task 4.8.2 — Addon manager UI
 - List available addons for a tenant with on/off toggles
 - Per-addon config form (rendered from config schema)
 - Files: `src/app/admin/tenants/[id]/addons/page.tsx`, `src/components/admin/AddonManager.tsx`
-- Depends on: `4.7.1`
+- Depends on: `4.8.1`
 - Testing covered by Phase 4 Playwright tests
 
 ---
 
-## Step 4.8 — Phase 4 QA
+## Step 4.9 — Phase 4 QA
 
-### Task 4.8.1 — Write and pass all Phase 4 unit tests
+### Task 4.9.1 — Write and pass all Phase 4 unit tests
 
 - `tests/unit/renderer/render-component-tree.test.tsx` (updated with hydration + feature gating tests)
 - `tests/unit/components/interactive/accordion.test.tsx`
@@ -222,19 +271,22 @@
 - `tests/unit/components/interactive/carousel.test.tsx`
 - `tests/unit/components/interactive/modal.test.tsx`
 - `tests/unit/addons/registry.test.ts`
-- `tests/unit/addons/contact-form/contact-form.test.tsx`
-- `tests/unit/addons/contact-form/registration.test.ts`
-- `tests/unit/api/addons/contact-form.test.ts`
+- `tests/unit/addons/forms/form-builder.test.tsx`
+- `tests/unit/addons/forms/contact-form.test.tsx`
+- `tests/unit/addons/forms/registration.test.ts`
+- `tests/unit/api/addons/forms/form-submission.test.ts`
 - `tests/unit/addons/gallery/gallery.test.tsx`
 - `tests/unit/addons/gallery/lightbox.test.tsx`
 - `tests/unit/addons/gallery/registration.test.ts`
 - `tests/unit/addons/calendar/calendar-widget.test.tsx`
 - `tests/unit/addons/calendar/registration.test.ts`
+- `tests/unit/addons/analytics/analytics.test.ts`
+- `tests/unit/addons/analytics/registration.test.ts`
 - `tests/unit/api/admin/addons.test.ts`
 - **Run**: `npm test`
 - **Pass criteria**: All tests green.
 
-### Task 4.8.2 — Write Playwright E2E tests for interactive components
+### Task 4.9.2 — Write Playwright E2E tests for interactive components
 
 File: `tests/e2e/phase4-interactive-components.spec.ts`
 
@@ -288,27 +340,27 @@ File: `tests/e2e/phase4-interactive-components.spec.ts`
    - Assert: HTML source contains the first slide's image
    - Assert: HTML source contains the modal trigger button label
 
-### Task 4.8.3 — Write Playwright E2E tests for addon feature gating
+### Task 4.9.3 — Write Playwright E2E tests for addon feature gating
 
 File: `tests/e2e/phase4-addon-gating.spec.ts`
 
-**Prerequisites**: Demo tenant with contact form addon component in a page's JSON content. Addon initially enabled.
+**Prerequisites**: Demo tenant with forms addon enabled and a page containing a `FormBuilder` component (contact form preset). Addon initially enabled.
 
 **Test cases**:
 
-1. **Contact form renders when addon is enabled**
-   - Navigate to the tenant page with the contact form
+1. **Form renders when addon is enabled**
+   - Navigate to the tenant page with the form
    - Assert: form element is visible
    - Assert: form fields are rendered (name, email, message, etc.)
    - Assert: submit button is visible
 
-2. **Contact form submission works**
+2. **Form submission works**
    - Fill in all required fields
    - Click submit
    - Assert: success message appears (matches `successMessage` prop)
    - Assert: no error messages visible
 
-3. **Contact form validation rejects empty required fields**
+3. **Form validation rejects empty required fields**
    - Leave required fields empty
    - Click submit
    - Assert: validation error messages appear for required fields
@@ -317,17 +369,17 @@ File: `tests/e2e/phase4-addon-gating.spec.ts`
 4. **Disable addon — component disappears**
    - Log in to admin
    - Navigate to addon manager for the demo tenant
-   - Toggle contact form addon OFF
+   - Toggle forms addon OFF
    - Save
-   - Navigate to the tenant page that had the contact form
-   - Assert: contact form is NOT visible on the page
+   - Navigate to the tenant page that had the form
+   - Assert: form is NOT visible on the page
    - Assert: other (non-addon) components on the page still render
 
 5. **Re-enable addon — component reappears**
    - Log in to admin
-   - Toggle contact form addon ON
+   - Toggle forms addon ON
    - Navigate to tenant page
-   - Assert: contact form is visible again
+   - Assert: form is visible again
 
 6. **Gallery addon gating**
    - Ensure gallery addon is enabled for tenant, page has Gallery component
@@ -349,7 +401,31 @@ File: `tests/e2e/phase4-addon-gating.spec.ts`
    - Disable → widget gone
    - Re-enable → widget back
 
-### Task 4.8.4 — Write Playwright E2E test for addon admin management UI
+### Task 4.9.4 — Write Playwright E2E tests for analytics addon
+
+File: `tests/e2e/phase4-addon-analytics.spec.ts`
+
+**Prerequisites**: Demo tenant with analytics addon enabled, configured with a GA4 tracking ID.
+
+**Test cases**:
+
+1. **Analytics script injected when addon is enabled**
+   - Navigate to `http://demo.localhost:3000/`
+   - Assert: page source contains a `<script>` tag with the GA4 tracking ID
+   - Assert: script tag contains `gtag` or expected analytics provider code
+
+2. **Analytics script absent when addon is disabled**
+   - Disable analytics addon for tenant in admin
+   - Navigate to tenant page
+   - Assert: page source does NOT contain the analytics script tag
+
+3. **Switching analytics provider updates the script**
+   - Update addon config to use Plausible provider
+   - Navigate to tenant page
+   - Assert: page source contains Plausible script (`data-domain` attribute)
+   - Assert: GA4 script is no longer present
+
+### Task 4.9.5 — Write Playwright E2E test for addon admin management UI
 
 File: `tests/e2e/phase4-addon-admin.spec.ts`
 
@@ -359,17 +435,25 @@ File: `tests/e2e/phase4-addon-admin.spec.ts`
 
 1. **Addon manager lists all available addons**
    - Navigate to `/admin/tenants/{demoTenantId}/addons`
-   - Assert: contact form addon listed with name and toggle
+   - Assert: forms addon listed with name and toggle
    - Assert: gallery addon listed
    - Assert: calendar addon listed
+   - Assert: analytics addon listed
 
 2. **Toggle addon on and off**
-   - Assert: contact form addon is currently enabled (toggle ON)
+   - Assert: forms addon is currently enabled (toggle ON)
    - Click toggle to disable
    - Assert: toggle reflects OFF state
    - Refresh page → assert toggle is still OFF (persisted)
    - Click toggle to enable
    - Assert: toggle reflects ON state
 
+3. **Addon config form**
+   - Click on analytics addon to expand config
+   - Assert: provider dropdown and tracking ID field are visible
+   - Fill in tracking ID, select provider
+   - Save
+   - Refresh → assert config values persisted
+
 - **Run**: `npx playwright test tests/e2e/phase4-*.spec.ts`
-- **Pass criteria**: All tests across all 3 spec files pass.
+- **Pass criteria**: All tests across all 4 spec files pass.

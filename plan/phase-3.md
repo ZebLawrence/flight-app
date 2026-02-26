@@ -45,12 +45,15 @@
 ## Step 3.2 — Blog Admin `[DEV-2]` `[PARALLEL with 3.1]`
 
 ### Task 3.2.1 — Blog CRUD API
-- GET/POST `/api/admin/blog?tenantId=...` — list/create posts
+- GET/POST `/api/admin/blog?tenantId=&limit=&offset=` — list (paginated)/create posts
+- GET response shape: `{ data: BlogPost[], total: number }`
 - GET/PUT/DELETE `/api/admin/blog/[id]` — read/update/delete
 - Files: `src/app/api/admin/blog/route.ts`, `src/app/api/admin/blog/[id]/route.ts`
 - Depends on: Phase 2
 - **Unit tests** (`tests/unit/api/admin/blog.test.ts`):
   - GET with `tenantId` returns only that tenant's posts
+  - GET with `limit` and `offset` paginates results correctly
+  - GET returns correct `total` count regardless of limit/offset
   - POST creates a blog post with all fields (title, slug, excerpt, content, author, tags, featured_image, published)
   - POST with duplicate slug for the same tenant returns 409
   - PUT updates post fields including Markdown `content`

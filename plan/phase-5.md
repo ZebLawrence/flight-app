@@ -2,7 +2,7 @@
 
 > **Goal**: Per-tenant SEO features (sitemap, robots.txt, structured data, meta tags) and performance optimization.
 >
-> **Phase QA Criteria**: Lighthouse SEO score >90. Sitemap and robots.txt are valid. Pages cache correctly.
+> **Phase QA Criteria**: Lighthouse SEO score >90. Sitemap and robots.txt are valid. Pages cache correctly. Favicon and OG images served correctly.
 >
 > **Parallelism**: 4 streams.
 
@@ -22,6 +22,27 @@
 - Files: update `src/app/(tenant)/[[...slug]]/page.tsx` metadata
 - Depends on: `5.1.1`
 - Testing covered by Phase 5 Playwright tests
+
+### Task 5.1.3 — Favicon serving route
+- Route handler at `(tenant)/favicon.ico/route.ts`
+- Reads `favicon` URL from the tenant's `theme` JSONB and proxies/redirects to it
+- Falls back to a default platform favicon if tenant has none set
+- Files: `src/app/(tenant)/favicon.ico/route.ts`
+- Depends on: Phase 1
+- Testing covered by Phase 5 Playwright tests
+
+### Task 5.1.4 — OG image generation/serving
+- Route handler at `(tenant)/api/og/route.tsx`
+- Uses `next/og` (Satori) to generate dynamic Open Graph images per page
+- Includes tenant name, page title, and tenant logo from theme
+- Falls back to a default OG image template if no page-specific data
+- Pages reference this route via `meta.ogImage` or auto-generated URL in `generateMetadata`
+- Files: `src/app/(tenant)/api/og/route.tsx`
+- Depends on: `5.1.1`
+- **Unit tests** (`tests/unit/seo/og-image.test.ts`):
+  - Returns a PNG/image response with correct `Content-Type`
+  - Accepts `title` and `tenant` query params
+  - Returns a valid image response even with missing params (uses defaults)
 
 ---
 
@@ -110,6 +131,7 @@
 
 - `tests/unit/seo/sitemap.test.ts`
 - `tests/unit/seo/robots.test.ts`
+- `tests/unit/seo/og-image.test.ts`
 - `tests/unit/addons/seo/organization-schema.test.ts`
 - `tests/unit/seo/article-schema.test.ts`
 - `tests/unit/api/admin/revalidate.test.ts`
@@ -141,6 +163,19 @@ File: `tests/e2e/phase5-page-seo.spec.ts`
 4. **Page has canonical URL**
    - Assert: `<link rel="canonical" href="...">` is present
    - Assert: `href` matches expected URL (tenant domain + page slug)
+
+5. **Favicon is served per tenant**
+   - Fetch `http://demo.localhost:3000/favicon.ico`
+   - Assert: response status 200
+   - Assert: response `Content-Type` is an image type (e.g., `image/x-icon`, `image/png`)
+   - Assert: response is not empty
+
+6. **OG image is generated per page**
+   - Fetch `http://demo.localhost:3000/api/og?title=Hello+World`
+   - Assert: response status 200
+   - Assert: response `Content-Type` is `image/png`
+   - Assert: response body is non-empty (valid image data)
+   - Assert: page's `<meta property="og:image">` points to the OG image route
 
 ### Task 5.5.3 — Write Playwright E2E tests for sitemap and robots.txt
 

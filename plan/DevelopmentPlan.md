@@ -34,9 +34,9 @@ Phase 0 (Thin Slice)
 |-------|-----------------|-----------------|
 | Phase 0 | 1 | — |
 | Phase 1 | 5 (data, types, layout, content, theme) | Phase 0 |
-| Phase 2 | 5 (auth→then: tenant API, tenant UI, pages, theme editor, media) | Phase 1 |
+| Phase 2 | 8 (auth→then: tenant API, tenant UI, pages, theme editor, media, preview, versioning, cloning) | Phase 1 |
 | Phase 3 | 3 (markdown+pages, blog admin, blog SEO) | Phase 2 |
-| Phase 4 | 5+ (hydration pattern→then: 4 components, addon system, 3 addons, addon admin) | Phase 1+2 |
+| Phase 4 | 6+ (hydration pattern→then: 4 components, addon system, 4 addons, analytics, addon admin) | Phase 1+2 |
 | Phase 5 | 4 (page SEO, sitemap, structured data, caching) | Phase 2+3 |
 | Phase 6 | 3 (docker, proxy, monitoring) | Phase 5 |
 
@@ -64,7 +64,10 @@ tests/
 │   │   │   ├── link.test.tsx
 │   │   │   ├── icon.test.tsx
 │   │   │   ├── list.test.tsx
-│   │   │   └── card.test.tsx
+│   │   │   ├── card.test.tsx
+│   │   │   ├── nav.test.tsx
+│   │   │   ├── header.test.tsx
+│   │   │   └── footer.test.tsx
 │   │   ├── layout/                  # Phase 1
 │   │   │   ├── section.test.tsx
 │   │   │   ├── container.test.tsx
@@ -83,14 +86,19 @@ tests/
 │   │   └── resolve.test.ts          # Phase 0
 │   ├── theme/
 │   │   └── theme-provider.test.tsx   # Phase 1
-│   ├── db/queries/                   # Phase 1
+│   ├── db/queries/                   # Phase 1 + Phase 2
 │   │   ├── tenants.test.ts
 │   │   ├── pages.test.ts
 │   │   ├── blog-posts.test.ts
 │   │   ├── media.test.ts
-│   │   └── addons.test.ts
+│   │   ├── addons.test.ts
+│   │   └── page-versions.test.ts     # Phase 2
 │   ├── auth/
 │   │   └── auth.test.ts              # Phase 2
+│   ├── rate-limit/
+│   │   └── rate-limit.test.ts        # Phase 2
+│   ├── preview/
+│   │   └── preview.test.ts           # Phase 2
 │   ├── s3/
 │   │   └── client.test.ts            # Phase 2
 │   ├── markdown/
@@ -99,8 +107,12 @@ tests/
 │   │   └── rss.test.ts               # Phase 3
 │   ├── addons/                        # Phase 4
 │   │   ├── registry.test.ts
-│   │   ├── contact-form/
+│   │   ├── forms/
+│   │   │   ├── form-builder.test.tsx
 │   │   │   ├── contact-form.test.tsx
+│   │   │   └── registration.test.ts
+│   │   ├── analytics/
+│   │   │   ├── analytics.test.ts
 │   │   │   └── registration.test.ts
 │   │   ├── gallery/
 │   │   │   ├── gallery.test.tsx
@@ -114,6 +126,7 @@ tests/
 │   ├── seo/                           # Phase 5
 │   │   ├── sitemap.test.ts
 │   │   ├── robots.test.ts
+│   │   ├── og-image.test.ts
 │   │   └── article-schema.test.ts
 │   └── api/
 │       ├── health.test.ts             # Phase 6
@@ -122,11 +135,15 @@ tests/
 │       │   ├── tenants.test.ts        # Phase 2
 │       │   ├── pages.test.ts          # Phase 2
 │       │   ├── media.test.ts          # Phase 2
+│       │   ├── preview.test.ts        # Phase 2
+│       │   ├── page-versions.test.ts  # Phase 2
+│       │   ├── tenant-clone.test.ts   # Phase 2
 │       │   ├── blog.test.ts           # Phase 3
 │       │   ├── addons.test.ts         # Phase 4
 │       │   └── revalidate.test.ts     # Phase 5
 │       └── addons/
-│           └── contact-form.test.ts   # Phase 4
+│           └── forms/
+│               └── form-submission.test.ts  # Phase 4
 ├── e2e/                              # Playwright E2E tests
 │   ├── smoke.spec.ts                 # Phase 0 — Playwright runner smoke test
 │   ├── phase0-tenant-rendering.spec.ts
@@ -137,11 +154,15 @@ tests/
 │   ├── phase2-theme-editor.spec.ts
 │   ├── phase2-media-library.spec.ts
 │   ├── phase2-full-workflow.spec.ts
+│   ├── phase2-preview-mode.spec.ts
+│   ├── phase2-content-versioning.spec.ts
+│   ├── phase2-tenant-clone.spec.ts
 │   ├── phase3-blog-admin.spec.ts
 │   ├── phase3-blog-tenant.spec.ts
 │   ├── phase3-blog-seo.spec.ts
 │   ├── phase4-interactive-components.spec.ts
 │   ├── phase4-addon-gating.spec.ts
+│   ├── phase4-addon-analytics.spec.ts
 │   ├── phase4-addon-admin.spec.ts
 │   ├── phase5-page-seo.spec.ts
 │   ├── phase5-sitemap-robots.spec.ts

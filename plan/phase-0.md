@@ -64,7 +64,8 @@
 ### Task 0.2.4 — Create seed script with demo tenant + page
 - Seed: 1 tenant (`slug: "demo"`, `name: "Demo Business"`, minimal theme)
 - Seed: 1 page (`slug: ""` (homepage), title: "Hello World", content: simple component tree with `Heading` + `Text`)
-- Files: `src/lib/db/seed.ts`
+- **Incremental seed pattern**: create a seed runner (`src/lib/db/seed.ts`) that calls phase-specific seed modules. Phase 0 seed (`src/lib/db/seeds/phase-0.ts`) only uses `Heading` + `Text`. Later phases add their own seed modules that layer on additional components without blocking on unfinished work.
+- Files: `src/lib/db/seed.ts`, `src/lib/db/seeds/phase-0.ts`
 - Depends on: `0.2.3`
 - QA: Run `npx tsx src/lib/db/seed.ts`, query DB shows tenant and page rows
 
@@ -80,9 +81,10 @@
 
 ### Task 0.3.2 — Create component registry with Heading and Text
 - Registry: `Record<string, React.ComponentType<any>>`
+- **Auto-discovery pattern**: each component directory (`content/`, `layout/`, `interactive/`) exports its own partial registry map via a barrel file (`index.ts`). The top-level `registry.ts` merges them (`{ ...contentRegistry, ...layoutRegistry, ...interactiveRegistry }`). This avoids merge conflicts when multiple devs add components simultaneously.
 - `Heading` component: renders `<h1>`–`<h6>` based on `level` prop, displays `text` prop
 - `Text` component: renders `<p>` with `content` prop
-- Files: `src/components/cms/content/Heading.tsx`, `src/components/cms/content/Text.tsx`, `src/components/cms/registry.ts`
+- Files: `src/components/cms/content/Heading.tsx`, `src/components/cms/content/Text.tsx`, `src/components/cms/content/index.ts` (barrel), `src/components/cms/registry.ts`
 - Depends on: `0.3.1`
 - **Unit tests** (`tests/unit/components/heading.test.tsx`, `tests/unit/components/text.test.tsx`):
   - Heading: renders correct tag level (`<h1>` through `<h6>`) based on `level` prop
@@ -95,6 +97,11 @@
 ### Task 0.3.3 — Create renderComponentTree function
 - Recursive function: takes `ComponentNode` + registry → React element
 - Handles: missing type (skip with console.warn), props passthrough, recursive children
+- **Structural validation on each node before rendering**:
+  - `type` must be a non-empty string — skip node with warning if missing or wrong type
+  - `props` must be a plain object if present — skip node with warning if it's a string, number, or array
+  - `children` must be an array if present — skip node with warning if it's a string, object, or number
+  - Validation errors in a child node must not crash the parent — siblings continue rendering
 - Files: `src/lib/renderer/index.ts`
 - Depends on: `0.3.1`, `0.3.2`
 - **Unit tests** (`tests/unit/renderer/render-component-tree.test.tsx`):
@@ -105,6 +112,17 @@
   - Handles empty children array
   - Handles node with no props
   - Handles deeply nested tree (3+ levels)
+  - **Malformed JSON resilience**:
+    - Node missing `type` field entirely → skips node, logs warning, does not crash
+    - Node with `type: null` or `type: 123` → skips node, logs warning
+    - Node with `props` as a string instead of object → skips node, logs warning
+    - Node with `props` as an array instead of object → skips node, logs warning
+    - Node with `children` as a string instead of array → skips node, logs warning
+    - Node with `children` as an object instead of array → skips node, logs warning
+    - Sibling nodes render normally when one sibling has malformed structure
+    - Parent renders normally when one deeply nested child (3+ levels) is malformed
+    - Completely empty object `{}` as a node → skips, does not crash
+    - `null` or `undefined` in children array → skips that entry, renders other children
 
 ---
 
@@ -136,6 +154,14 @@
 - Tenant layout `(tenant)/layout.tsx`: basic HTML wrapper
 - Files: `src/app/(tenant)/[[...slug]]/page.tsx`, `src/app/(tenant)/layout.tsx`
 - Depends on: `0.4.2`, `0.3.3`, `0.2.4`
+- Testing covered by E2E tests in Step 0.5
+
+### Task 0.4.4 — Create basic not-found page
+- Next.js `not-found.tsx` inside the `(tenant)` route group
+- Displays a simple "Page not found" message with a link back to the homepage
+- Used when: unknown tenant (middleware rewrite), unknown page slug (`notFound()` call from page route)
+- Files: `src/app/(tenant)/not-found.tsx`
+- Depends on: `0.4.3`
 - Testing covered by E2E tests in Step 0.5
 
 ---
@@ -170,14 +196,16 @@ File: `tests/e2e/phase0-tenant-rendering.spec.ts`
    - Assert: page contains a `<p>` tag with the expected body text from the seed
    - Assert: view page source (or `page.content()`) contains the heading text (confirming SSR, not client-only rendering)
 
-2. **Unknown tenant returns 404**
+2. **Unknown tenant returns 404 with not-found page**
    - Navigate to `http://nonexistent.localhost:3000/`
-   - Assert: page returns HTTP 404 or displays a not-found message
+   - Assert: page returns HTTP 404
+   - Assert: page displays "Page not found" message
    - Assert: does NOT render the demo tenant's content
 
-3. **Unknown page slug returns 404**
+3. **Unknown page slug returns 404 with not-found page**
    - Navigate to `http://demo.localhost:3000/does-not-exist`
-   - Assert: page returns HTTP 404 or displays a not-found message
+   - Assert: page returns HTTP 404
+   - Assert: page displays "Page not found" message with a link to the homepage
 
 - **Run**: `npx playwright test tests/e2e/phase0-tenant-rendering.spec.ts`
 - **Pass criteria**: All 3 tests pass.
