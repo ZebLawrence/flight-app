@@ -40,7 +40,7 @@ Build a lightweight, multi-tenant CMS that lets an operator (you) spin up custom
 | Framework     | **Next.js** (App Router, SSR)               |
 | Language      | **TypeScript**                              |
 | Database      | **PostgreSQL** (JSONB columns for configs)  |
-| ORM           | **Prisma** or **Drizzle**                   |
+| ORM           | **Drizzle**                                 |
 | Media Storage | **S3-compatible** (AWS S3 or MinIO)         |
 | Admin UI      | Next.js route group (`/admin/...`)          |
 | Styling       | **Tailwind CSS**                            |
@@ -79,6 +79,7 @@ Build a lightweight, multi-tenant CMS that lets an operator (you) spin up custom
 | custom_domain  | TEXT UQ?  | Optional custom domain               |
 | theme          | JSONB     | Global theme config (colors, fonts, logo) |
 | enabled_addons | TEXT[]    | List of active add-on module keys    |
+| is_template    | BOOLEAN   | Template tenant for cloning (default false) |
 | created_at     | TIMESTAMP |                                      |
 | updated_at     | TIMESTAMP |                                      |
 
@@ -133,6 +134,16 @@ Build a lightweight, multi-tenant CMS that lets an operator (you) spin up custom
 | name        | TEXT      | Display name                           |
 | description | TEXT      |                                        |
 | config_schema | JSONB   | JSON Schema for per-tenant addon config|
+
+**page_versions**
+| Column      | Type      | Description                            |
+|-------------|-----------|----------------------------------------|
+| id          | UUID PK   |                                        |
+| page_id     | UUID FK   | Owning page                            |
+| content     | JSONB     | Snapshot of page content at this version |
+| title       | TEXT      | Snapshot of page title                 |
+| created_at  | TIMESTAMP |                                        |
+| created_by  | TEXT      | Optional — who made the change         |
 
 **tenant_addon_configs**
 | Column      | Type      | Description                            |
@@ -201,6 +212,9 @@ A central registry maps `type` strings to React components. This is the extensib
 - `Icon` — icon by name (from an icon set)
 - `List` — ordered/unordered list
 - `Card` — composable card wrapper
+- `Nav` — site navigation rendered from published pages (uses `sort_order`)
+- `Header` — page header combining logo, Nav, and optional CTA
+- `Footer` — page footer with link columns, copyright, social icons
 
 **Interactive components (pattern examples):**
 - `Accordion` — collapsible sections (items prop with title/content pairs)
@@ -265,9 +279,9 @@ Accessible at `/admin` (protected by auth). Operator-only — no client-facing a
 | Screen                  | Purpose                                           |
 |-------------------------|---------------------------------------------------|
 | Dashboard               | List of all tenants with status, quick stats      |
-| Tenant Detail           | Edit tenant name, slug, domain, theme             |
-| Pages List              | All pages for a tenant, reorder, create/delete    |
-| Page Editor             | JSON editor (with tree view) for page content     |
+| Tenant Detail           | Edit tenant name, slug, domain, theme; clone tenant |
+| Pages List              | All pages for a tenant, drag-to-reorder, create/delete |
+| Page Editor             | JSON editor for page content, preview button, version history |
 | Blog Posts List         | All posts for a tenant                            |
 | Blog Post Editor        | Markdown editor with preview, frontmatter fields  |
 | Media Library           | Upload/browse/delete media for a tenant           |
@@ -296,12 +310,13 @@ Accessible at `/admin` (protected by auth). Operator-only — no client-facing a
 
 ### 8.3 Launch Add-ons
 
-| Add-on           | Components                | Config                          |
-|------------------|---------------------------|---------------------------------|
-| Calendar         | `CalendarWidget`          | Booking URL, availability rules |
-| Contact Forms    | `ContactForm`             | Fields, recipient email, CRM    |
-| Image Gallery    | `Gallery`, `Lightbox`     | Layout style, image sources     |
-| SEO Tools        | *(no components)*         | Sitemap settings, schema markup |
+| Add-on           | Components                      | Config                                |
+|------------------|---------------------------------|---------------------------------------|
+| Calendar         | `CalendarWidget`                | Booking URL, availability rules       |
+| Forms            | `FormBuilder`, `ContactForm`    | Field schema, recipient email, CRM    |
+| Image Gallery    | `Gallery`, `Lightbox`           | Layout style, image sources           |
+| Analytics        | *(no visible components)*       | Provider (GA4/Plausible/custom), tracking ID |
+| SEO Tools        | *(no components)*               | Sitemap settings, schema markup       |
 
 ---
 
@@ -323,6 +338,8 @@ Accessible at `/admin` (protected by auth). Operator-only — no client-facing a
 - Auto-generated `sitemap.xml` per tenant (all published pages + blog posts)
 - `robots.txt` per tenant
 - Structured data (JSON-LD) support via the SEO add-on
+- Per-tenant `favicon.ico` serving from theme config
+- Dynamic Open Graph image generation via `next/og` (Satori)
 - Proper `<head>` management via Next.js Metadata API
 
 ---
@@ -357,53 +374,67 @@ services:
 
 - **Performance**: Pages should render in <200ms server-side. Leverage Next.js caching (ISR or on-demand revalidation) to avoid hitting the DB on every request.
 - **Scalability**: Stateless app container — scale horizontally behind the proxy. DB and S3 are the shared state.
-- **Security**: Tenant isolation at the query level (all queries scoped by `tenant_id`). Admin auth required for all mutations. Input validation on JSON configs against component schemas.
+- **Security**: Tenant isolation at the query level (all queries scoped by `tenant_id`). Admin auth required for all mutations. Input validation on JSON configs against component schemas. Rate limiting on auth and public-facing endpoints (e.g., form submissions).
 
 ---
 
 ## 13. Implementation Phases
 
-### Phase 1 — Core Foundation
-- Project setup (Next.js, TypeScript, Tailwind, Prisma/Drizzle, Docker)
-- Database schema + migrations
+### Phase 0 — Thin Slice
+- Project setup (Next.js, TypeScript, Tailwind, Drizzle, Docker)
+- Minimal schema (tenants + pages), seed script with incremental seed pattern
 - Tenant resolution middleware (subdomain + custom domain)
-- Component registry + rendering engine
-- Core layout + content components
-- Basic theme system (CSS variables)
-- SSR page rendering from JSON
+- Component registry (auto-discovery barrel pattern) + rendering engine with malformed JSON resilience
+- Basic Heading + Text components, SSR page rendering from JSON
+- Basic not-found page
+
+### Phase 1 — Core Foundation
+- Complete data layer (all tables, paginated query functions)
+- TypeScript types + validation for all components
+- Layout components (Section, Container, Grid, Row, Column, Spacer)
+- Content components (Heading, Text, Image, Button, Link, Icon, List, Card, Nav, Header, Footer)
+- Theme system (CSS variables, ThemeProvider, Tailwind integration)
+- Themed 404 page
 
 ### Phase 2 — Admin Panel
-- Admin auth (operator login)
+- Admin auth (operator login) with rate limiting
 - Tenant CRUD (create, list, edit, delete)
-- Page CRUD with JSON editor
+- Page CRUD with JSON editor and drag-to-reorder
 - Theme editor
 - Media upload to S3
+- Preview / draft mode (token-based preview of unpublished pages)
+- Content versioning (last N versions per page, restore capability)
+- Tenant cloning / starter templates
 
 ### Phase 3 — Blog & Content
-- Blog post CRUD in admin
+- Blog post CRUD in admin (paginated)
 - Markdown rendering pipeline
 - Blog listing + detail pages
 - Blog-specific SEO (structured data, RSS feed)
 
 ### Phase 4 — Interactive Components & Add-ons
-- Accordion, Tabs, Carousel, Modal components
+- Accordion, Tabs, Carousel, Modal components (client-side hydration pattern)
 - Add-on system architecture (registry, gating, config)
+- Forms add-on (generic FormBuilder + ContactForm convenience wrapper) with rate limiting
+- Image gallery add-on (Gallery + Lightbox)
 - Calendar scheduling add-on
-- Contact forms add-on
-- Image gallery add-on
+- Analytics add-on (GA4 / Plausible / custom script injection)
 
-### Phase 5 — SEO & Polish
+### Phase 5 — SEO & Performance
+- Per-page SEO metadata + canonical URLs
 - Sitemap generation per tenant
 - robots.txt per tenant
+- Favicon serving per tenant
+- Dynamic OG image generation (next/og)
 - JSON-LD / structured data via SEO add-on
-- Performance optimization (caching, ISR)
-- Page editor UX improvements (preview, component palette)
+- Performance optimization (caching, on-demand revalidation)
 
 ### Phase 6 — Production Readiness
-- Docker Compose production config
-- Caddy/Traefik setup with auto-SSL
+- Docker Compose production config (multi-stage build)
+- Caddy setup with auto-SSL (wildcard + on-demand TLS for custom domains)
+- Database migration on startup
+- Health check endpoint
 - Backup strategy for DB + S3
-- Monitoring / health checks
 - Documentation
 
 ---
@@ -411,9 +442,10 @@ services:
 ## Verification
 
 After each phase, verify by:
-1. **Phase 1**: Create a tenant via DB seed, visit `tenant-slug.localhost:3000`, confirm SSR renders the JSON component tree with theming applied
-2. **Phase 2**: Log into `/admin`, create a new tenant, add pages, confirm they render on the tenant's subdomain
-3. **Phase 3**: Create a blog post in admin, confirm it renders at `/blog/{slug}` with proper Markdown formatting
-4. **Phase 4**: Add interactive components to a page's JSON, confirm they render and hydrate correctly. Toggle an add-on off and confirm the component is hidden.
-5. **Phase 5**: Check `/sitemap.xml`, validate SEO meta tags in page source, test with Lighthouse
-6. **Phase 6**: `docker compose up` on a fresh machine and verify full functionality
+1. **Phase 0**: `docker compose up`, visit `demo.localhost:3000`, confirm SSR renders "Hello World" from JSON in PostgreSQL
+2. **Phase 1**: Seed rich theme + multi-section page with all components (including Nav, Header, Footer), confirm themed rendering with CSS variables
+3. **Phase 2**: Log into `/admin`, full CRUD workflow — create tenant, add pages (with reorder), upload media, preview draft page, edit and restore a version, clone a tenant
+4. **Phase 3**: Create a blog post in admin with Markdown, confirm it renders at `/blog/{slug}` with proper formatting, check RSS feed
+5. **Phase 4**: Add interactive components to a page's JSON, confirm they render and hydrate. Toggle add-ons on/off. Submit a form. Verify analytics script injection.
+6. **Phase 5**: Check `/sitemap.xml`, `/robots.txt`, `/favicon.ico`, OG image route. Validate SEO meta tags. Lighthouse SEO score >90.
+7. **Phase 6**: `docker compose -f docker-compose.prod.yml up` on a fresh machine, full regression — all unit + E2E tests pass

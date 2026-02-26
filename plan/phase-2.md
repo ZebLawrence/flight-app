@@ -150,6 +150,17 @@
   - DELETE removes page, returns 200
   - All endpoints return 401 without auth cookie
 
+### Task 2.4.1b — Page reorder API endpoint
+- PUT `/api/admin/pages/reorder` — body: `{ tenantId, pages: Array<{ id, sort_order }> }`
+- Calls `reorderPages()` query function to update `sort_order` for multiple pages in a single call
+- Files: update `src/app/api/admin/pages/route.ts` (or `src/app/api/admin/pages/reorder/route.ts`)
+- Depends on: `2.4.1`
+- **Unit tests** (add to `tests/unit/api/admin/pages.test.ts`):
+  - PUT `/reorder` with valid body updates `sort_order` for all specified pages
+  - PUT `/reorder` with non-existent page ID returns 404
+  - PUT `/reorder` returns 401 without auth cookie
+  - After reorder, GET pages returns them in the new sort order
+
 ### Task 2.4.2 — Pages list UI for a tenant
 - Lists all pages for a selected tenant, shows slug, title, published status, sort order
 - Add/delete buttons
