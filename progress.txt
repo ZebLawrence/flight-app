@@ -1,0 +1,16 @@
+## Task 0.1.1 — Initialize Next.js project
+
+**Status**: ✅ COMPLETE
+
+**What was done**:
+- Created Next.js 14 project with TypeScript, Tailwind CSS, App Router, and src/ directory
+- Files created: package.json, tsconfig.json, tailwind.config.ts, next.config.js, postcss.config.js, .eslintrc.json
+- Created src/app structure with layout.tsx, page.tsx, globals.css
+- Installed all dependencies successfully
+- Verified dev server starts without errors at http://localhost:3000
+
+**QA Passed**: ✅ `npm run dev` starts successfully, ready for browser testing
+
+**Next task**: Task 0.1.2 — Add Docker Compose for dev environment (depends on 0.1.1)
+
+---

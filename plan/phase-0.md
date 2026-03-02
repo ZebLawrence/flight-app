@@ -8,7 +8,7 @@
 
 ## Step 0.1 — Project Scaffolding `[BLOCKING]`
 
-### Task 0.1.1 — Initialize Next.js project
+### Task 0.1.1 — Initialize Next.js project ✅
 - Run `create-next-app` with TypeScript, Tailwind, App Router, `src/` directory
 - Files: `package.json`, `tsconfig.json`, `tailwind.config.ts`, `src/app/layout.tsx`, `src/app/globals.css`
 - QA: `npm run dev` starts without errors, browser shows default Next.js page
