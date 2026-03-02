@@ -96,7 +96,9 @@ When all tasks in a step are complete:
 
 You may use Copilot CLI via `execute` for scoped sub-work, including non-interactive prompts like:
 
-- `copilot -p "Perform a portion of this task, here is the context you need ..."`
+- `copilot --yolo -p "Perform a portion of this task, here is the context you need ..."`
+
+The `--yolo` flag enables auto-execution of suggested commands without confirmation.
 
 Reference docs:
 - https://docs.github.com/en/copilot/how-tos/copilot-cli/cli-getting-started#using-github-copilot-cli-non-interactively

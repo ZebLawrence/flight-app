@@ -2,3 +2,8 @@ node_modules
 .next
 dist
 .vscode
+
+# Environment files
+.env
+.env.local
+.env*.local

@@ -13,7 +13,7 @@
 - Files: `package.json`, `tsconfig.json`, `tailwind.config.ts`, `src/app/layout.tsx`, `src/app/globals.css`
 - QA: `npm run dev` starts without errors, browser shows default Next.js page
 
-### Task 0.1.2 — Add Docker Compose for dev environment
+### Task 0.1.2 — Add Docker Compose for dev environment ✅
 - PostgreSQL 16 container with volume, port 5432
 - `.env.example` with `DATABASE_URL=postgresql://postgres:postgres@localhost:5432/flightapp`
 - Files: `docker-compose.yml`, `.env.example`, `.gitignore` (add `.env`)
