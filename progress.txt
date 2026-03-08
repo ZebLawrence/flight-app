@@ -1,19 +1,23 @@
-## Task 0.1.2 — Add Docker Compose for dev environment
+## Step 0.1 Complete — Project Scaffolding
 
 **Status**: ✅ COMPLETE
 
-**What was done**:
-- Created docker-compose.yml with PostgreSQL 16 container configuration
-  - Container name: flight-app-db
-  - Port: 5432
-  - Credentials: postgres/postgres
-  - Database: flightapp
-  - Volume: postgres_data for persistence
-- Created .env.example with DATABASE_URL connection string
-- Updated .gitignore to exclude .env and .env*.local files
+**Completed tasks**:
+- Task 0.1.1 — Initialize Next.js project
+- Task 0.1.2 — Add Docker Compose for dev environment
+- Task 0.1.3 — Install and configure Drizzle ORM
+- Task 0.1.4 — Install and configure test infrastructure
 
-**QA Note**: Docker is not installed on this development machine. The configuration is complete and ready to test once Docker is installed. To verify: `docker compose up db` then `psql -h localhost -U postgres -d flightapp`
+**Step 0.1 outcomes**:
+- Next.js app scaffolded with TypeScript, Tailwind, App Router, and `src/`
+- Docker Compose PostgreSQL dev environment configured
+- Drizzle ORM + Drizzle Kit configured and validated
+- Unit and E2E test runners configured with passing smoke tests
 
-**Next task**: Task 0.1.3 — Install and configure Drizzle ORM (depends on 0.1.2)
+**Validation run**:
+- `npm test` ✅
+- `npx playwright test` ✅
+
+**Next most important task**: Task 0.2.1 — Create tenants table schema
 
 ---

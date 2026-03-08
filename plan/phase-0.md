@@ -20,14 +20,14 @@
 - Depends on: `0.1.1`
 - QA: `docker compose up db` starts Postgres, `psql` can connect
 
-### Task 0.1.3 — Install and configure Drizzle ORM
+### Task 0.1.3 — Install and configure Drizzle ORM ✅
 - Install `drizzle-orm`, `drizzle-kit`, `postgres` (driver)
 - Create Drizzle config and client
 - Files: `drizzle.config.ts`, `src/lib/db/index.ts`
 - Depends on: `0.1.2`
 - QA: `npx drizzle-kit generate` runs without errors
 
-### Task 0.1.4 — Install and configure test infrastructure
+### Task 0.1.4 — Install and configure test infrastructure ✅
 - Install `vitest`, `@testing-library/react`, `@testing-library/jest-dom`, `playwright`, `@playwright/test`
 - Create `vitest.config.ts` with path aliases matching `tsconfig.json`
 - In `vitest.config.ts`, set test environment to `jsdom` for React component tests

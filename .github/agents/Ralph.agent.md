@@ -2,7 +2,7 @@
 description: 'Ralph executes project-plan tasks from phase docs with test-gated implementation, progress handoff notes, checklist updates, and per-step commits.'
 model: Auto (copilot)
 name: Ralph
-infer: true
+user-invokable: true
 target: vscode
 tools: ['vscode', 'execute', 'read', 'edit', 'search', 'agent', 'todo']
 ---
