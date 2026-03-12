@@ -44,7 +44,7 @@
 
 ## Step 0.2 — Minimal Schema & Seed `[BLOCKING]`
 
-### Task 0.2.1 — Create tenants table schema
+### Task 0.2.1 — Create tenants table schema ✅
 - Drizzle schema for `tenants` table: `id` (UUID), `name`, `slug` (unique), `custom_domain` (unique nullable), `theme` (JSONB), `created_at`, `updated_at`
 - Skip `enabled_addons` for now
 - Phase 0 choice: keep `theme` as unconstrained JSONB (no enforced shape yet)
@@ -55,7 +55,7 @@
 - Depends on: `0.1.3`
 - QA: Schema file exports valid Drizzle table definition, TypeScript compiles
 
-### Task 0.2.2 — Create pages table schema
+### Task 0.2.2 — Create pages table schema ✅
 - Drizzle schema for `pages` table: `id` (UUID), `tenant_id` (FK), `slug`, `title`, `content` (JSONB), `published` (bool), `sort_order`, `created_at`, `updated_at`
 - Skip `meta` JSONB for now
 - Phase 0 choice: do not add a composite unique constraint on (`tenant_id`, `slug`) yet
@@ -66,13 +66,13 @@
 - Depends on: `0.2.1`
 - QA: Schema compiles, FK relationship to tenants is correct
 
-### Task 0.2.3 — Run first migration
+### Task 0.2.3 — Run first migration ✅
 - Generate and apply migration for tenants + pages
 - Canonical workflow for this project: `drizzle-kit generate` then `drizzle-kit migrate`
 - Depends on: `0.2.2`
 - QA: `npx drizzle-kit generate` and `npx drizzle-kit migrate` create tables in Postgres, visible via `psql \dt`
 
-### Task 0.2.4 — Create seed script with demo tenant + page
+### Task 0.2.4 — Create seed script with demo tenant + page ✅
 - Seed: 1 tenant (`slug: "demo"`, `name: "Demo Business"`, minimal theme)
 - Seed: 1 internal test tenant for platform-root access (`slug: "internal"`, `name: "Internal Test Tenant"`, `custom_domain: "localhost"`)
 - Treat `127.0.0.1` as an alias of `localhost` in hostname normalization (do not create a second tenant)

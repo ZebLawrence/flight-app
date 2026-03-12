@@ -1,23 +1,14 @@
-## Step 0.1 Complete — Project Scaffolding
+## Task 0.2.3 — Run first migration
 
-**Status**: ✅ COMPLETE
+**Status**: in-progress
 
-**Completed tasks**:
-- Task 0.1.1 — Initialize Next.js project
-- Task 0.1.2 — Add Docker Compose for dev environment
-- Task 0.1.3 — Install and configure Drizzle ORM
-- Task 0.1.4 — Install and configure test infrastructure
+**Why this task**: Tenants and pages schemas are ready; migration can now be generated and applied.
 
-**Step 0.1 outcomes**:
-- Next.js app scaffolded with TypeScript, Tailwind, App Router, and `src/`
-- Docker Compose PostgreSQL dev environment configured
-- Drizzle ORM + Drizzle Kit configured and validated
-- Unit and E2E test runners configured with passing smoke tests
+**What we're doing**:
+- Run `drizzle-kit generate`
+- Run `drizzle-kit migrate`
+- Verify `tenants` and `pages` tables exist in Postgres
 
-**Validation run**:
-- `npm test` ✅
-- `npx playwright test` ✅
-
-**Next most important task**: Task 0.2.1 — Create tenants table schema
+**Expected outcome**: DB schema is materialized in PostgreSQL and visible via table listing.
 
 ---
