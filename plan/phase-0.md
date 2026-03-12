@@ -95,13 +95,13 @@
 
 ## Step 0.3 — Minimal Rendering Pipeline `[BLOCKING]`
 
-### Task 0.3.1 — Define ComponentNode TypeScript type
+### Task 0.3.1 — Define ComponentNode TypeScript type ✅
 - `type ComponentNode = { type: string; props?: Record<string, unknown>; children?: ComponentNode[] }`
 - Files: `src/lib/types/component.ts`, `src/lib/types/index.ts`
 - Depends on: `0.1.1`
 - QA: Type compiles, can type a sample JSON tree without errors
 
-### Task 0.3.2 — Create component registry with Heading and Text
+### Task 0.3.2 — Create component registry with Heading and Text ✅
 - Registry: `Record<string, React.ComponentType<any>>`
 - **Auto-discovery pattern**: each component directory (`content/`, `layout/`, `interactive/`) exports its own partial registry map via a barrel file (`index.ts`). The top-level `registry.ts` merges them (`{ ...contentRegistry, ...layoutRegistry, ...interactiveRegistry }`). This avoids merge conflicts when multiple devs add components simultaneously.
 - `Heading` component: renders `<h1>`–`<h6>` based on `level` prop, displays `text` prop
@@ -116,7 +116,7 @@
   - Registry: `registry["Heading"]` and `registry["Text"]` return defined React components
   - Registry: unknown key returns `undefined`
 
-### Task 0.3.3 — Create renderComponentTree function
+### Task 0.3.3 — Create renderComponentTree function ✅
 - Recursive function: takes `ComponentNode` + registry → React element
 - Handles: missing type (skip with console.warn), props passthrough, recursive children
 - Warning format requirement: include a node path hint in warnings (e.g., `root.children[1].children[0]`) to make malformed JSON debugging easier
