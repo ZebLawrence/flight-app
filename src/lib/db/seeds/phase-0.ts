@@ -47,13 +47,9 @@ export async function seedPhase0() {
       published: true,
       sortOrder: 0,
       content: {
-        type: 'Section',
-        props: {},
+        type: 'Heading',
+        props: { level: 1, text: 'Hello World' },
         children: [
-          {
-            type: 'Heading',
-            props: { level: 1, text: 'Hello World' },
-          },
           {
             type: 'Text',
             props: { content: 'Welcome to demo business' },
@@ -61,6 +57,25 @@ export async function seedPhase0() {
         ],
       },
     });
+  } else {
+    await db
+      .update(pages)
+      .set({
+        title: 'Hello World',
+        published: true,
+        sortOrder: 0,
+        content: {
+          type: 'Heading',
+          props: { level: 1, text: 'Hello World' },
+          children: [
+            {
+              type: 'Text',
+              props: { content: 'Welcome to demo business' },
+            },
+          ],
+        },
+      })
+      .where(and(eq(pages.tenantId, demoTenant.id), eq(pages.slug, '')));
   }
 
   // Upsert internal tenant homepage
@@ -78,13 +93,9 @@ export async function seedPhase0() {
       published: true,
       sortOrder: 0,
       content: {
-        type: 'Section',
-        props: {},
+        type: 'Heading',
+        props: { level: 1, text: 'Internal Test Tenant' },
         children: [
-          {
-            type: 'Heading',
-            props: { level: 1, text: 'Internal Test Tenant' },
-          },
           {
             type: 'Text',
             props: { content: 'Welcome to internal test tenant' },
@@ -92,6 +103,25 @@ export async function seedPhase0() {
         ],
       },
     });
+  } else {
+    await db
+      .update(pages)
+      .set({
+        title: 'Internal Test Tenant',
+        published: true,
+        sortOrder: 0,
+        content: {
+          type: 'Heading',
+          props: { level: 1, text: 'Internal Test Tenant' },
+          children: [
+            {
+              type: 'Text',
+              props: { content: 'Welcome to internal test tenant' },
+            },
+          ],
+        },
+      })
+      .where(and(eq(pages.tenantId, internalTenant.id), eq(pages.slug, '')));
   }
 
   console.log('Phase 0 seed complete.');
