@@ -152,7 +152,7 @@
 
 ## Step 0.4 — Tenant Resolution & SSR Page `[BLOCKING]`
 
-### Task 0.4.1 — Create resolveTenant utility
+### Task 0.4.1 — Create resolveTenant utility ✅
 - `resolveTenant(hostname: string): Promise<Tenant | null>`
 - Architecture split for testability:
   - Pure hostname helpers in `src/lib/tenant/hostname.ts` (normalize + slug extraction)
@@ -183,7 +183,7 @@
   - Handles multi-label subdomains by using the full prefix as slug (e.g., `foo.bar.localhost` → `foo.bar`)
   - Includes direct tests for pure hostname helpers (normalization + slug extraction) alongside resolver behavior tests
 
-### Task 0.4.2 — Create Next.js middleware for hostname forwarding
+### Task 0.4.2 — Create Next.js middleware for hostname forwarding ✅
 - Extract hostname from `request.headers` and forward:
   - normalized hostname in `x-request-hostname`
   - original raw host value in `x-original-host` (for debugging/logging)
@@ -197,7 +197,7 @@
 - Depends on: `0.1.1`
 - Testing covered by E2E tests in Step 0.5 (middleware is best tested via real HTTP requests)
 
-### Task 0.4.3 — Create tenant page route with SSR rendering
+### Task 0.4.3 — Create tenant page route with SSR rendering ✅
 - Catch-all route `(tenant)/[[...slug]]/page.tsx`
 - Server component: read hostname from headers, call `resolveTenant(hostname)` in server runtime, then fetch page from DB and render component tree
 - If tenant is not found, call `notFound()` to return HTTP 404
@@ -207,7 +207,7 @@
 - Depends on: `0.4.1`, `0.4.2`, `0.3.3`, `0.2.4`
 - Testing covered by E2E tests in Step 0.5
 
-### Task 0.4.4 — Create basic not-found page
+### Task 0.4.4 — Create basic not-found page ✅
 - Next.js `not-found.tsx` inside the `(tenant)` route group
 - Displays a simple "Page not found" message with a link back to the homepage
 - Used when: unknown tenant (`notFound()` call from page route), unknown page slug (`notFound()` call from page route)
@@ -224,7 +224,7 @@
 >
 > **Prerequisites**: Docker Compose services running, DB seeded with demo tenant + homepage. (App server is started by Playwright `webServer`.)
 
-### Task 0.5.1 — Write and pass unit tests for Phase 0
+### Task 0.5.1 — Write and pass unit tests for Phase 0 ✅
 
 Run all unit tests created in prior steps. Every test must pass.
 
@@ -235,7 +235,7 @@ Run all unit tests created in prior steps. Every test must pass.
 - **Run**: `npm test`
 - **Pass criteria**: All tests pass. Zero failures.
 
-### Task 0.5.2 — Write Playwright E2E tests for tenant page rendering
+### Task 0.5.2 — Write Playwright E2E tests for tenant page rendering ✅
 
 File: `tests/e2e/phase0-tenant-rendering.spec.ts`
 

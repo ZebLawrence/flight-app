@@ -1,14 +1,12 @@
-## Task 0.2.3 — Run first migration
+## Phase 0 Complete
 
-**Status**: in-progress
+**Status**: completed
 
-**Why this task**: Tenants and pages schemas are ready; migration can now be generated and applied.
+**Completed steps**:
+- Step 0.1: Project scaffolding, DB container, Drizzle setup, and test infrastructure
+- Step 0.2: Tenants/pages schemas, migration generation/application, and Phase 0 seed runner
+- Step 0.3: Component typing, registry (Heading/Text), recursive renderer + resilience tests
+- Step 0.4: Hostname normalization + tenant resolution, middleware forwarding, tenant SSR route, not-found
+- Step 0.5: Unit and E2E QA suites passing (including all 6 Phase 0 Playwright cases)
 
-**What we're doing**:
-- Run `drizzle-kit generate`
-- Run `drizzle-kit migrate`
-- Verify `tenants` and `pages` tables exist in Postgres
-
-**Expected outcome**: DB schema is materialized in PostgreSQL and visible via table listing.
-
----
+**Next suggested focus**: Begin `plan/phase-1.md` and select the next `[BLOCKING]` incomplete task.
