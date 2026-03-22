@@ -1,2 +1,22 @@
-export type { ComponentNode, PageMeta } from './component';
+export type {
+  ComponentNode,
+  PageMeta,
+  SectionProps,
+  ContainerProps,
+  GridProps,
+  RowProps,
+  ColumnProps,
+  SpacerProps,
+  HeadingProps,
+  TextProps,
+  ImageProps,
+  ButtonProps,
+  LinkProps,
+  IconProps,
+  ListProps,
+  CardProps,
+  NavProps,
+  HeaderProps,
+  FooterProps,
+} from './component';
 export type { TenantTheme } from './theme';
