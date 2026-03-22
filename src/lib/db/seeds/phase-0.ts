@@ -1,6 +1,6 @@
 import { eq, and } from 'drizzle-orm';
 import { db } from '../index';
-import { tenants, pages } from '../schema';
+import { tenants, pages, addons, tenantAddonConfigs } from '../schema';
 
 export async function seedPhase0() {
   // Upsert demo tenant
@@ -125,4 +125,45 @@ export async function seedPhase0() {
   }
 
   console.log('Phase 0 seed complete.');
+
+  // Upsert analytics addon definition
+  await db
+    .insert(addons)
+    .values({
+      key: 'analytics',
+      name: 'Analytics',
+      description: 'Website analytics integration (GA4 or Plausible)',
+      configSchema: {
+        type: 'object',
+        properties: {
+          provider: { type: 'string', enum: ['ga4', 'plausible'] },
+          trackingId: { type: 'string' },
+          domain: { type: 'string' },
+        },
+      },
+    })
+    .onConflictDoUpdate({
+      target: addons.key,
+      set: {
+        name: 'Analytics',
+        description: 'Website analytics integration (GA4 or Plausible)',
+      },
+    });
+
+  // Configure analytics addon for demo tenant (GA4 enabled by default)
+  await db
+    .insert(tenantAddonConfigs)
+    .values({
+      tenantId: demoTenant.id,
+      addonKey: 'analytics',
+      config: { provider: 'ga4', trackingId: 'G-DEMO1234567' },
+      enabled: true,
+    })
+    .onConflictDoUpdate({
+      target: [tenantAddonConfigs.tenantId, tenantAddonConfigs.addonKey],
+      set: {
+        config: { provider: 'ga4', trackingId: 'G-DEMO1234567' },
+        enabled: true,
+      },
+    });
 }
