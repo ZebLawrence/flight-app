@@ -11,6 +11,7 @@ export const pages = pgTable('pages', {
   content: jsonb('content').notNull().default({}),
   published: boolean('published').notNull().default(true),
   sortOrder: integer('sort_order').notNull().default(0),
+  meta: jsonb('meta'),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 }, (table) => ({

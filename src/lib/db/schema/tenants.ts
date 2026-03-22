@@ -6,6 +6,7 @@ export const tenants = pgTable('tenants', {
   slug: text('slug').notNull().unique(),
   customDomain: text('custom_domain').unique(),
   theme: jsonb('theme').notNull().default({}),
+  enabledAddons: text('enabled_addons').array().notNull().default([]),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 });
