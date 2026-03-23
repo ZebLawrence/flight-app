@@ -1,11 +1,13 @@
 import { eq, and } from 'drizzle-orm';
 import { normalizeHostname, extractSlug } from './hostname';
+import type { TenantTheme } from '@/lib/types/theme';
 
 export type ResolvedTenant = {
   id: string;
   name: string;
   slug: string;
   customDomain: string | null;
+  theme?: Partial<TenantTheme> | null;
   [key: string]: unknown;
 };
 
