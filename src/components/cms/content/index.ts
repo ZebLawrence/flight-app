@@ -5,6 +5,7 @@ import { Text } from './Text';
 import { Image } from './Image';
 import { Link } from './Link';
 import { Icon } from './Icon';
+import { List } from './List';
 
 export const contentRegistry: Record<string, ComponentType<any>> = {
   Button,
@@ -13,4 +14,5 @@ export const contentRegistry: Record<string, ComponentType<any>> = {
   Image,
   Link,
   Icon,
+  List,
 };
