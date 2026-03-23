@@ -2,6 +2,7 @@
 
 import React from 'react';
 import * as LucideIcons from 'lucide-react';
+import { type LucideIcon } from 'lucide-react';
 
 type IconProps = {
   name: string;
@@ -18,7 +19,7 @@ function toComponentName(name: string): string {
 
 export function Icon({ name, size = 24, className }: IconProps) {
   const componentName = toComponentName(name);
-  const LucideIcon = (LucideIcons as Record<string, React.ComponentType<React.SVGProps<SVGSVGElement> & { size?: number }>>)[componentName];
+  const LucideIcon = (LucideIcons as unknown as Record<string, LucideIcon>)[componentName];
 
   if (!LucideIcon) {
     return null;
