@@ -4,6 +4,7 @@ import { Heading } from './Heading';
 import { Text } from './Text';
 import { Image } from './Image';
 import { Link } from './Link';
+import { Icon } from './Icon';
 
 export const contentRegistry: Record<string, ComponentType<any>> = {
   Button,
@@ -11,4 +12,5 @@ export const contentRegistry: Record<string, ComponentType<any>> = {
   Text,
   Image,
   Link,
+  Icon,
 };
