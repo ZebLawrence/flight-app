@@ -6,7 +6,24 @@ const config: Config = {
     "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
-  theme: { extend: {} },
+  theme: {
+    extend: {
+      colors: {
+        primary: 'var(--color-primary)',
+        secondary: 'var(--color-secondary)',
+        accent: 'var(--color-accent)',
+        background: 'var(--color-background)',
+        'theme-text': 'var(--color-text)',
+      },
+      fontFamily: {
+        heading: 'var(--font-heading)',
+        body: 'var(--font-body)',
+      },
+      borderRadius: {
+        theme: 'var(--border-radius)',
+      },
+    },
+  },
   plugins: [],
 };
 export default config;
