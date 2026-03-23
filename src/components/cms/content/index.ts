@@ -7,6 +7,7 @@ import { Image } from './Image';
 import { Link } from './Link';
 import { Icon } from './Icon';
 import { List } from './List';
+import { Nav } from './Nav';
 
 export const contentRegistry: Record<string, ComponentType<any>> = {
   Button,
@@ -17,4 +18,5 @@ export const contentRegistry: Record<string, ComponentType<any>> = {
   Link,
   Icon,
   List,
+  Nav,
 };
