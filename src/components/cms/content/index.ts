@@ -9,6 +9,7 @@ import { Icon } from './Icon';
 import { List } from './List';
 import { Nav } from './Nav';
 import { Header } from './Header';
+import { Footer } from './Footer';
 
 export const contentRegistry: Record<string, ComponentType<any>> = {
   Button,
@@ -21,4 +22,5 @@ export const contentRegistry: Record<string, ComponentType<any>> = {
   List,
   Nav,
   Header,
+  Footer,
 };
