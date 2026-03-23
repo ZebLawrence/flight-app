@@ -1,5 +1,6 @@
 import type { ComponentType } from 'react';
 import { Button } from './Button';
+import { Card } from './Card';
 import { Heading } from './Heading';
 import { Text } from './Text';
 import { Image } from './Image';
@@ -9,6 +10,7 @@ import { List } from './List';
 
 export const contentRegistry: Record<string, ComponentType<any>> = {
   Button,
+  Card,
   Heading,
   Text,
   Image,
