@@ -122,8 +122,13 @@ export async function reorderPages(tenantId: string, orderedIds: string[]): Prom
   }
   caseExpr = sql`(${caseExpr} END)::integer`;
 
-  await db
+  const updated = await db
     .update(pages)
     .set({ sortOrder: caseExpr })
-    .where(and(eq(pages.tenantId, tenantId), inArray(pages.id, orderedIds)));
+    .where(and(eq(pages.tenantId, tenantId), inArray(pages.id, orderedIds)))
+    .returning({ id: pages.id });
+
+  if (updated.length !== orderedIds.length) {
+    throw new Error('One or more page IDs not found');
+  }
 }

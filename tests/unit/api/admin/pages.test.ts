@@ -9,6 +9,7 @@ const mockGetPagesByTenant = vi.hoisted(() => vi.fn());
 const mockCreatePage = vi.hoisted(() => vi.fn());
 const mockUpdatePage = vi.hoisted(() => vi.fn());
 const mockDeletePage = vi.hoisted(() => vi.fn());
+const mockReorderPages = vi.hoisted(() => vi.fn());
 
 vi.mock('@/lib/auth', () => ({
   validateSession: mockValidateSession,
@@ -19,6 +20,7 @@ vi.mock('@/lib/db/queries/pages', () => ({
   createPage: mockCreatePage,
   updatePage: mockUpdatePage,
   deletePage: mockDeletePage,
+  reorderPages: mockReorderPages,
 }));
 
 const page1 = {
@@ -292,5 +294,98 @@ describe('DELETE /api/admin/pages/[id]', () => {
     );
 
     expect(response.status).toBe(401);
+  });
+});
+
+describe('PUT /api/admin/pages/reorder', () => {
+  it('updates sort_order for all specified pages and returns 200', async () => {
+    mockReorderPages.mockResolvedValue(undefined);
+    const { PUT } = await import('@/app/api/admin/pages/reorder/route');
+
+    const response = await PUT(
+      withSession('http://localhost/api/admin/pages/reorder', {
+        method: 'PUT',
+        body: {
+          tenantId: 'tenant-uuid-1',
+          pages: [
+            { id: 'page-uuid-1', sort_order: 1 },
+            { id: 'page-uuid-2', sort_order: 0 },
+          ],
+        },
+      }),
+    );
+
+    expect(response.status).toBe(200);
+    const body = await response.json();
+    expect(body).toEqual({ success: true });
+    // IDs should be sorted by sort_order: page-uuid-2 (0) before page-uuid-1 (1)
+    expect(mockReorderPages).toHaveBeenCalledWith('tenant-uuid-1', ['page-uuid-2', 'page-uuid-1']);
+  });
+
+  it('returns 404 for a non-existent page ID', async () => {
+    mockReorderPages.mockRejectedValue(new Error('One or more page IDs not found'));
+    const { PUT } = await import('@/app/api/admin/pages/reorder/route');
+
+    const response = await PUT(
+      withSession('http://localhost/api/admin/pages/reorder', {
+        method: 'PUT',
+        body: {
+          tenantId: 'tenant-uuid-1',
+          pages: [{ id: 'non-existent-id', sort_order: 0 }],
+        },
+      }),
+    );
+
+    expect(response.status).toBe(404);
+  });
+
+  it('returns 401 without auth cookie', async () => {
+    const { PUT } = await import('@/app/api/admin/pages/reorder/route');
+
+    const response = await PUT(
+      makeRequest('http://localhost/api/admin/pages/reorder', {
+        method: 'PUT',
+        body: {
+          tenantId: 'tenant-uuid-1',
+          pages: [{ id: 'page-uuid-1', sort_order: 0 }],
+        },
+      }),
+    );
+
+    expect(response.status).toBe(401);
+  });
+
+  it('after reorder, GET pages returns them in the new sort order', async () => {
+    mockReorderPages.mockResolvedValue(undefined);
+    const reorderedPages = [
+      { ...page2, sortOrder: 0 },
+      { ...page1, sortOrder: 1 },
+    ];
+    mockGetPagesByTenant.mockResolvedValue({ data: reorderedPages, total: 2 });
+
+    const { PUT } = await import('@/app/api/admin/pages/reorder/route');
+    const { GET } = await import('@/app/api/admin/pages/route');
+
+    const reorderResponse = await PUT(
+      withSession('http://localhost/api/admin/pages/reorder', {
+        method: 'PUT',
+        body: {
+          tenantId: 'tenant-uuid-1',
+          pages: [
+            { id: 'page-uuid-1', sort_order: 1 },
+            { id: 'page-uuid-2', sort_order: 0 },
+          ],
+        },
+      }),
+    );
+    expect(reorderResponse.status).toBe(200);
+
+    const getResponse = await GET(
+      withSession('http://localhost/api/admin/pages?tenantId=tenant-uuid-1'),
+    );
+    expect(getResponse.status).toBe(200);
+    const body = await getResponse.json();
+    expect(body.data[0].id).toBe('page-uuid-2');
+    expect(body.data[1].id).toBe('page-uuid-1');
   });
 });
