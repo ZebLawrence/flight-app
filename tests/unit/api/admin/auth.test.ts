@@ -1,7 +1,14 @@
 // @vitest-environment node
-import { describe, it, expect, vi, beforeAll, afterAll } from 'vitest';
+import { describe, it, expect, vi, beforeAll, afterAll, beforeEach } from 'vitest';
 import { NextRequest } from 'next/server';
 import bcrypt from 'bcryptjs';
+
+const mockCheckRateLimit = vi.hoisted(() => vi.fn());
+
+vi.mock('@/lib/rate-limit', () => ({
+  LOGIN_RATE_LIMIT: { windowMs: 60_000, maxRequests: 5 },
+  checkRateLimit: mockCheckRateLimit,
+}));
 
 const VALID_EMAIL = 'admin@example.com';
 const VALID_PASSWORD = 'correct-horse-battery-staple';
@@ -27,6 +34,10 @@ vi.mock('@/lib/auth', async (importOriginal) => {
     ...actual,
     createSession: vi.fn(() => FAKE_TOKEN),
   };
+});
+
+beforeEach(() => {
+  mockCheckRateLimit.mockReturnValue({ allowed: true, retryAfterSeconds: 0 });
 });
 
 describe('POST /api/admin/auth', () => {
@@ -95,5 +106,90 @@ describe('DELETE /api/admin/auth', () => {
     // Cookie value should be empty or expired
     const hasEmptyValue = setCookie!.includes('session=;') || setCookie!.includes('session=,') || setCookie!.includes('Max-Age=0');
     expect(hasEmptyValue).toBe(true);
+  });
+});
+
+describe('Rate limiting for POST /api/admin/auth', () => {
+  it('returns 429 after exceeding the 5-attempt limit from the same IP', async () => {
+    const { POST } = await import('@/app/api/admin/auth/route');
+    const ip = '203.0.113.1';
+
+    let callCount = 0;
+    mockCheckRateLimit.mockImplementation(() => {
+      callCount++;
+      return callCount > 5
+        ? { allowed: false, retryAfterSeconds: 30 }
+        : { allowed: true, retryAfterSeconds: 0 };
+    });
+
+    const makeRequest = () =>
+      POST(
+        new NextRequest('http://localhost/api/admin/auth', {
+          method: 'POST',
+          body: JSON.stringify({ email: VALID_EMAIL, password: VALID_PASSWORD }),
+          headers: { 'Content-Type': 'application/json', 'x-forwarded-for': ip },
+        }),
+      );
+
+    for (let i = 0; i < 5; i++) {
+      const res = await makeRequest();
+      expect(res.status).not.toBe(429);
+    }
+
+    const response = await makeRequest();
+    expect(response.status).toBe(429);
+    const body = await response.json();
+    expect(body).toEqual({ error: 'Too many attempts' });
+  });
+
+  it('includes a Retry-After header with a positive integer value in the 429 response', async () => {
+    const { POST } = await import('@/app/api/admin/auth/route');
+
+    mockCheckRateLimit.mockReturnValue({ allowed: false, retryAfterSeconds: 45 });
+
+    const response = await POST(
+      new NextRequest('http://localhost/api/admin/auth', {
+        method: 'POST',
+        body: JSON.stringify({ email: VALID_EMAIL, password: VALID_PASSWORD }),
+        headers: { 'Content-Type': 'application/json', 'x-forwarded-for': '203.0.113.1' },
+      }),
+    );
+
+    expect(response.status).toBe(429);
+    const retryAfter = response.headers.get('Retry-After');
+    expect(retryAfter).toBeTruthy();
+    expect(Number(retryAfter)).toBeGreaterThan(0);
+    expect(Number.isInteger(Number(retryAfter))).toBe(true);
+  });
+
+  it('does not block requests from a different IP', async () => {
+    const { POST } = await import('@/app/api/admin/auth/route');
+    const blockedIp = '203.0.113.1';
+    const allowedIp = '203.0.113.2';
+
+    mockCheckRateLimit.mockImplementation((ip: string) => {
+      if (ip === blockedIp) {
+        return { allowed: false, retryAfterSeconds: 30 };
+      }
+      return { allowed: true, retryAfterSeconds: 0 };
+    });
+
+    const blockedResponse = await POST(
+      new NextRequest('http://localhost/api/admin/auth', {
+        method: 'POST',
+        body: JSON.stringify({ email: VALID_EMAIL, password: VALID_PASSWORD }),
+        headers: { 'Content-Type': 'application/json', 'x-forwarded-for': blockedIp },
+      }),
+    );
+    expect(blockedResponse.status).toBe(429);
+
+    const allowedResponse = await POST(
+      new NextRequest('http://localhost/api/admin/auth', {
+        method: 'POST',
+        body: JSON.stringify({ email: VALID_EMAIL, password: VALID_PASSWORD }),
+        headers: { 'Content-Type': 'application/json', 'x-forwarded-for': allowedIp },
+      }),
+    );
+    expect(allowedResponse.status).not.toBe(429);
   });
 });
