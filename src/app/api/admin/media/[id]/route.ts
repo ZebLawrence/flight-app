@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { validateSession } from '@/lib/auth';
 import { getMediaById, deleteMedia } from '@/lib/db/queries/media';
-import { deleteFile } from '@/lib/s3';
+import { deleteFile } from '@/lib/s3/client';
 
 function isAuthenticated(request: NextRequest): boolean {
   const token = request.cookies.get('session')?.value;

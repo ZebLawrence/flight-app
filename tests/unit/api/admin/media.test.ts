@@ -23,7 +23,7 @@ vi.mock('@/lib/db/queries/media', () => ({
   deleteMedia: mockDeleteMedia,
 }));
 
-vi.mock('@/lib/s3', () => ({
+vi.mock('@/lib/s3/client', () => ({
   uploadFile: mockUploadFile,
   deleteFile: mockDeleteFile,
 }));
