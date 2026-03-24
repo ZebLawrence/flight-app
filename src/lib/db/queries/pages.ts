@@ -120,7 +120,7 @@ export async function reorderPages(tenantId: string, orderedIds: string[]): Prom
   for (let i = 0; i < orderedIds.length; i++) {
     caseExpr = sql`${caseExpr} WHEN ${orderedIds[i]}::uuid THEN ${i}`;
   }
-  caseExpr = sql`${caseExpr} END`;
+  caseExpr = sql`(${caseExpr} END)::integer`;
 
   await db
     .update(pages)
