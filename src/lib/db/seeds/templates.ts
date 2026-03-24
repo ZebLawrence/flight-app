@@ -162,7 +162,7 @@ const restaurantHomeContent = {
             ],
           },
         ],
-        copyright: '© 2024 Starter Restaurant. All rights reserved.',
+        copyright: '© 2026 Starter Restaurant. All rights reserved.',
         socialLinks: [
           { icon: 'instagram', href: 'https://instagram.com' },
           { icon: 'facebook', href: 'https://facebook.com' },
@@ -453,7 +453,7 @@ const agencyHomeContent = {
             ],
           },
         ],
-        copyright: '© 2024 Starter Agency. All rights reserved.',
+        copyright: '© 2026 Starter Agency. All rights reserved.',
         socialLinks: [
           { icon: 'twitter', href: 'https://twitter.com' },
           { icon: 'linkedin', href: 'https://linkedin.com' },
@@ -786,7 +786,7 @@ const portfolioHomeContent = {
             ],
           },
         ],
-        copyright: '© 2024 Alex Portfolio. All rights reserved.',
+        copyright: '© 2026 Alex Portfolio. All rights reserved.',
         socialLinks: [
           { icon: 'twitter', href: 'https://twitter.com' },
           { icon: 'github', href: 'https://github.com' },
