@@ -10,6 +10,7 @@ export function middleware(request: NextRequest) {
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set('x-original-host', rawHost);
   requestHeaders.set('x-request-hostname', normalized);
+  requestHeaders.set('x-pathname', request.nextUrl.pathname);
 
   return NextResponse.next({
     request: {

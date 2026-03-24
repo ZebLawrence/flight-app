@@ -115,7 +115,7 @@ describe('AdminLoginPage', () => {
     });
   });
 
-  it('POSTs credentials to /api/admin/login', async () => {
+  it('POSTs credentials to /api/admin/auth', async () => {
     (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
       ok: true,
       json: async () => ({ success: true }),
@@ -134,7 +134,7 @@ describe('AdminLoginPage', () => {
     await waitFor(() => expect(mockPush).toHaveBeenCalled());
 
     expect(global.fetch).toHaveBeenCalledWith(
-      '/api/admin/login',
+      '/api/admin/auth',
       expect.objectContaining({
         method: 'POST',
         body: JSON.stringify({ email: 'admin@example.com', password: 'secret' }),
