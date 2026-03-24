@@ -54,6 +54,14 @@ export async function createMedia(input: CreateMediaInput): Promise<Media> {
 }
 
 /**
+ * Returns a single media record by id, or undefined if not found.
+ */
+export async function getMediaById(id: string): Promise<Media | undefined> {
+  const [row] = await db.select().from(media).where(eq(media.id, id));
+  return row;
+}
+
+/**
  * Deletes a media record by id.
  */
 export async function deleteMedia(id: string): Promise<void> {
