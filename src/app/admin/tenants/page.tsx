@@ -2,6 +2,8 @@ import Link from 'next/link';
 import { listTenants } from '@/lib/db/queries/tenants';
 import type { Tenant } from '@/lib/db/queries/tenants';
 
+export const dynamic = 'force-dynamic';
+
 export default async function AdminTenantsPage() {
   const { data: tenants } = await listTenants();
 
