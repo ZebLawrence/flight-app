@@ -36,7 +36,7 @@ const phase1HomeContent = {
       },
     },
     // Spacer
-    { type: 'Spacer', props: { size: 16 } },
+    { type: 'Spacer', props: { height: '16px' } },
     // Hero section
     {
       type: 'Section',
@@ -54,7 +54,7 @@ const phase1HomeContent = {
       ],
     },
     // Spacer
-    { type: 'Spacer', props: { size: 40 } },
+    { type: 'Spacer', props: { height: '40px' } },
     // Features section
     {
       type: 'Section',
@@ -97,7 +97,7 @@ const phase1HomeContent = {
       ],
     },
     // Spacer
-    { type: 'Spacer', props: { size: 40 } },
+    { type: 'Spacer', props: { height: '40px' } },
     // About section
     {
       type: 'Section',
@@ -145,7 +145,7 @@ const phase1HomeContent = {
       ],
     },
     // Spacer
-    { type: 'Spacer', props: { size: 40 } },
+    { type: 'Spacer', props: { height: '40px' } },
     // Services section
     {
       type: 'Section',
@@ -171,7 +171,7 @@ const phase1HomeContent = {
                       children: [
                         { type: 'Heading', props: { level: 4, text: 'Web Design' } },
                         { type: 'Text', props: { content: 'Beautiful, responsive websites tailored to your brand.' } },
-                        { type: 'Link', props: { label: 'Learn more', href: '#contact' } },
+                        { type: 'Link', props: { text: 'Learn more', href: '#contact' } },
                       ],
                     },
                   ],
@@ -187,7 +187,7 @@ const phase1HomeContent = {
                       children: [
                         { type: 'Heading', props: { level: 4, text: 'Analytics' } },
                         { type: 'Text', props: { content: 'Deep insights into your visitors and conversions.' } },
-                        { type: 'Link', props: { label: 'Learn more', href: '#contact' } },
+                        { type: 'Link', props: { text: 'Learn more', href: '#contact' } },
                       ],
                     },
                   ],
@@ -203,7 +203,7 @@ const phase1HomeContent = {
                       children: [
                         { type: 'Heading', props: { level: 4, text: 'Security' } },
                         { type: 'Text', props: { content: 'Enterprise-grade protection for your data and users.' } },
-                        { type: 'Link', props: { label: 'Learn more', href: '#contact' } },
+                        { type: 'Link', props: { text: 'Learn more', href: '#contact' } },
                       ],
                     },
                   ],
@@ -219,7 +219,7 @@ const phase1HomeContent = {
                       children: [
                         { type: 'Heading', props: { level: 4, text: 'Performance' } },
                         { type: 'Text', props: { content: 'Blazing-fast load times that keep visitors engaged.' } },
-                        { type: 'Link', props: { label: 'Learn more', href: '#contact' } },
+                        { type: 'Link', props: { text: 'Learn more', href: '#contact' } },
                       ],
                     },
                   ],
@@ -231,14 +231,14 @@ const phase1HomeContent = {
       ],
     },
     // Spacer
-    { type: 'Spacer', props: { size: 40 } },
+    { type: 'Spacer', props: { height: '40px' } },
     // Footer
     {
       type: 'Footer',
       props: {
         columns: [
           {
-            heading: 'Product',
+            title: 'Product',
             links: [
               { label: 'Features', href: '#features' },
               { label: 'Pricing', href: '/pricing' },
@@ -246,7 +246,7 @@ const phase1HomeContent = {
             ],
           },
           {
-            heading: 'Company',
+            title: 'Company',
             links: [
               { label: 'About', href: '#about' },
               { label: 'Blog', href: '/blog' },
@@ -254,7 +254,7 @@ const phase1HomeContent = {
             ],
           },
           {
-            heading: 'Support',
+            title: 'Support',
             links: [
               { label: 'Docs', href: '/docs' },
               { label: 'Contact', href: '#contact' },
@@ -264,9 +264,9 @@ const phase1HomeContent = {
         ],
         copyright: '© 2024 Demo Business. All rights reserved.',
         socialLinks: [
-          { platform: 'twitter', href: 'https://twitter.com/demobusiness' },
-          { platform: 'github', href: 'https://github.com/demobusiness' },
-          { platform: 'linkedin', href: 'https://linkedin.com/company/demobusiness' },
+          { icon: 'twitter', href: 'https://twitter.com/demobusiness' },
+          { icon: 'github', href: 'https://github.com/demobusiness' },
+          { icon: 'linkedin', href: 'https://linkedin.com/company/demobusiness' },
         ],
       },
     },

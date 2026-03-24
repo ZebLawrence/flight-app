@@ -18,6 +18,7 @@ function toComponentName(name: string): string {
 }
 
 export function Icon({ name, size = 24, className }: IconProps) {
+  if (!name) return null;
   const componentName = toComponentName(name);
   const LucideIcon = (LucideIcons as unknown as Record<string, LucideIcon>)[componentName];
 
