@@ -3,6 +3,9 @@ import { headers } from 'next/headers';
 import { notFound } from 'next/navigation';
 import { registry } from '@/components/cms/registry';
 import { isAnalyticsConfig } from '@/lib/addons/analytics';
+import { getPageById } from '@/lib/db/queries/pages';
+import type { Page } from '@/lib/db/schema';
+import { validatePreviewToken } from '@/lib/preview';
 import { renderComponentTree } from '@/lib/renderer';
 import { resolveTenant } from '@/lib/tenant/resolve';
 
@@ -12,9 +15,12 @@ type TenantPageProps = {
   params: {
     slug?: string[];
   };
+  searchParams: {
+    preview?: string;
+  };
 };
 
-export default async function TenantPage({ params }: TenantPageProps) {
+export default async function TenantPage({ params, searchParams }: TenantPageProps) {
   const [{ db }, schema] = await Promise.all([
     import('@/lib/db'),
     import('@/lib/db/schema'),
@@ -33,10 +39,22 @@ export default async function TenantPage({ params }: TenantPageProps) {
     notFound();
   }
 
-  const pageSlug = params.slug?.join('/') ?? '';
+  const previewToken = searchParams.preview;
+  let isPreview = false;
+  let pagePromise: Promise<Page | null>;
 
-  const [pageRows, addonRows] = await Promise.all([
-    db
+  if (previewToken) {
+    const tokenPayload = validatePreviewToken(previewToken);
+    if (!tokenPayload || tokenPayload.tenantId !== tenant.id) {
+      notFound();
+    }
+    pagePromise = getPageById(tokenPayload.pageId).then((p) =>
+      p?.tenantId === tenant.id ? p : null,
+    );
+    isPreview = true;
+  } else {
+    const pageSlug = params.slug?.join('/') ?? '';
+    pagePromise = db
       .select()
       .from(pages)
       .where(
@@ -46,7 +64,12 @@ export default async function TenantPage({ params }: TenantPageProps) {
           eq(pages.published, true),
         ),
       )
-      .limit(1),
+      .limit(1)
+      .then((rows) => rows[0] ?? null);
+  }
+
+  const [page, addonRows] = await Promise.all([
+    pagePromise,
     db
       .select()
       .from(tenantAddonConfigs)
@@ -60,7 +83,6 @@ export default async function TenantPage({ params }: TenantPageProps) {
       .limit(1),
   ]);
 
-  const page = pageRows[0];
   if (!page) {
     notFound();
   }
@@ -75,6 +97,11 @@ export default async function TenantPage({ params }: TenantPageProps) {
   // interpolation into script src URLs and attribute values is safe.
   return (
     <>
+      {isPreview && (
+        <div className="fixed left-0 right-0 top-0 z-[9999] bg-amber-400 px-4 py-2 text-center text-sm font-bold text-black">
+          ⚠️ Preview Mode — This page is not published
+        </div>
+      )}
       {validConfig?.provider === 'ga4' && (
         <>
           {/* eslint-disable-next-line @next/next/no-sync-scripts */}
@@ -96,7 +123,7 @@ export default async function TenantPage({ params }: TenantPageProps) {
           src="https://plausible.io/js/script.js"
         />
       )}
-      <article>{renderedTree}</article>
+      <article className={isPreview ? 'pt-10' : undefined}>{renderedTree}</article>
     </>
   );
 }
