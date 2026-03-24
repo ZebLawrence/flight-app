@@ -1,9 +1,10 @@
 // @vitest-environment node
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeAll, beforeEach } from 'vitest';
 
 const mockRedirect = vi.fn();
 const mockCookiesGet = vi.fn();
 const mockHeadersGet = vi.fn();
+const mockValidateSession = vi.fn();
 
 vi.mock('next/navigation', () => ({
   redirect: mockRedirect,
@@ -15,28 +16,32 @@ vi.mock('next/headers', () => ({
 }));
 
 vi.mock('@/lib/auth', () => ({
-  validateSession: vi.fn(),
+  validateSession: mockValidateSession,
 }));
 
 vi.mock('@/components/admin/Sidebar', () => ({
   Sidebar: () => null,
 }));
 
-import { validateSession } from '@/lib/auth';
-
 describe('AdminLayout', () => {
+  let AdminLayout: (props: { children: React.ReactNode }) => Promise<React.ReactNode>;
+
+  beforeAll(async () => {
+    const mod = await import('@/app/admin/layout');
+    AdminLayout = mod.default;
+  });
+
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
   it('renders children without auth check when pathname is /admin/login', async () => {
-    mockHeadersGet.mockReturnValue('/admin/login');
+    mockHeadersGet.mockImplementation((key: string) =>
+      key === 'x-pathname' ? '/admin/login' : null,
+    );
     mockCookiesGet.mockReturnValue(undefined);
 
-    const { default: AdminLayout } = await import('@/app/admin/layout');
-
     const result = await AdminLayout({ children: <div>login page</div> });
-    // Should not redirect
     expect(mockRedirect).not.toHaveBeenCalled();
     expect(result).toBeDefined();
   });
@@ -46,19 +51,9 @@ describe('AdminLayout', () => {
       key === 'x-pathname' ? '/admin' : null,
     );
     mockCookiesGet.mockReturnValue(undefined);
+    mockValidateSession.mockReturnValue(false);
 
-    vi.resetModules();
-    vi.mock('next/navigation', () => ({ redirect: mockRedirect }));
-    vi.mock('next/headers', () => ({
-      cookies: () => ({ get: mockCookiesGet }),
-      headers: () => ({ get: mockHeadersGet }),
-    }));
-    vi.mock('@/lib/auth', () => ({ validateSession: vi.fn(() => false) }));
-    vi.mock('@/components/admin/Sidebar', () => ({ Sidebar: () => null }));
-
-    const { default: AdminLayout } = await import('@/app/admin/layout');
     await AdminLayout({ children: <div>protected</div> });
-
     expect(mockRedirect).toHaveBeenCalledWith('/admin/login');
   });
 
@@ -67,22 +62,9 @@ describe('AdminLayout', () => {
       key === 'x-pathname' ? '/admin/tenants' : null,
     );
     mockCookiesGet.mockReturnValue({ value: 'bad-token' });
-    vi.mocked(validateSession).mockReturnValue(false);
+    mockValidateSession.mockReturnValue(false);
 
-    vi.resetModules();
-    vi.mock('next/navigation', () => ({ redirect: mockRedirect }));
-    vi.mock('next/headers', () => ({
-      cookies: () => ({ get: mockCookiesGet }),
-      headers: () => ({ get: mockHeadersGet }),
-    }));
-    vi.mock('@/lib/auth', () => ({
-      validateSession: vi.fn(() => false),
-    }));
-    vi.mock('@/components/admin/Sidebar', () => ({ Sidebar: () => null }));
-
-    const { default: AdminLayout } = await import('@/app/admin/layout');
     await AdminLayout({ children: <div>protected</div> });
-
     expect(mockRedirect).toHaveBeenCalledWith('/admin/login');
   });
 
@@ -91,22 +73,9 @@ describe('AdminLayout', () => {
       key === 'x-pathname' ? '/admin' : null,
     );
     mockCookiesGet.mockReturnValue({ value: 'valid-token' });
-    vi.mocked(validateSession).mockReturnValue(true);
+    mockValidateSession.mockReturnValue(true);
 
-    vi.resetModules();
-    vi.mock('next/navigation', () => ({ redirect: mockRedirect }));
-    vi.mock('next/headers', () => ({
-      cookies: () => ({ get: mockCookiesGet }),
-      headers: () => ({ get: mockHeadersGet }),
-    }));
-    vi.mock('@/lib/auth', () => ({
-      validateSession: vi.fn(() => true),
-    }));
-    vi.mock('@/components/admin/Sidebar', () => ({ Sidebar: () => null }));
-
-    const { default: AdminLayout } = await import('@/app/admin/layout');
     const result = await AdminLayout({ children: <div>dashboard</div> });
-
     expect(mockRedirect).not.toHaveBeenCalled();
     expect(result).toBeDefined();
   });

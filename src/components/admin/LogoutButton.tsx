@@ -6,8 +6,11 @@ export function LogoutButton() {
   const router = useRouter();
 
   async function handleLogout() {
-    await fetch('/api/admin/auth', { method: 'DELETE' });
-    router.push('/admin/login');
+    try {
+      await fetch('/api/admin/auth', { method: 'DELETE' });
+    } finally {
+      router.push('/admin/login');
+    }
   }
 
   return (
