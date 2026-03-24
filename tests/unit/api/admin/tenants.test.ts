@@ -6,6 +6,7 @@ const FAKE_TOKEN = 'valid.session.token';
 
 const mockValidateSession = vi.hoisted(() => vi.fn());
 const mockListTenants = vi.hoisted(() => vi.fn());
+const mockListTemplateTenants = vi.hoisted(() => vi.fn());
 const mockCreateTenant = vi.hoisted(() => vi.fn());
 const mockGetTenantById = vi.hoisted(() => vi.fn());
 const mockUpdateTenant = vi.hoisted(() => vi.fn());
@@ -17,6 +18,7 @@ vi.mock('@/lib/auth', () => ({
 
 vi.mock('@/lib/db/queries/tenants', () => ({
   listTenants: mockListTenants,
+  listTemplateTenants: mockListTemplateTenants,
   createTenant: mockCreateTenant,
   getTenantById: mockGetTenantById,
   updateTenant: mockUpdateTenant,

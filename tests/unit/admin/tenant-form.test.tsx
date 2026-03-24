@@ -68,8 +68,11 @@ describe('TenantForm', () => {
     const nameInput = screen.getByLabelText(/name/i);
     Object.defineProperty(nameInput, 'value', { value: '', writable: true });
 
-    // Since the form uses required attribute, we test the fetch is not called
-    expect(global.fetch).not.toHaveBeenCalled();
+    // Since the form uses required attribute, the form submit fetch is not called
+    expect(global.fetch).not.toHaveBeenCalledWith(
+      '/api/admin/tenants',
+      expect.anything(),
+    );
   });
 
   it('shows inline validation when slug is empty on submit attempt', async () => {
@@ -84,17 +87,22 @@ describe('TenantForm', () => {
 
     // Click submit — fieldErrors.slug should appear but not fetch because
     // both name and slug have the HTML required attribute, so the browser
-    // blocks submission. We just verify fetch was never called.
+    // blocks submission. We just verify the form submit fetch was never called.
     fireEvent.click(screen.getByRole('button', { name: /create tenant/i }));
-    expect(global.fetch).not.toHaveBeenCalled();
+    expect(global.fetch).not.toHaveBeenCalledWith(
+      '/api/admin/tenants',
+      expect.anything(),
+    );
   });
 
   it('POSTs to /api/admin/tenants with name, slug, and customDomain', async () => {
-    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
-      ok: true,
-      status: 201,
-      json: async () => ({ id: 'new-uuid', name: 'Test Co', slug: 'test-co' }),
-    });
+    (global.fetch as ReturnType<typeof vi.fn>)
+      .mockResolvedValueOnce({ ok: true, json: async () => [] }) // template fetch
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 201,
+        json: async () => ({ id: 'new-uuid', name: 'Test Co', slug: 'test-co' }),
+      });
 
     render(<TenantForm />);
 
@@ -110,7 +118,7 @@ describe('TenantForm', () => {
 
     fireEvent.click(screen.getByRole('button', { name: /create tenant/i }));
 
-    await waitFor(() => expect(global.fetch).toHaveBeenCalled());
+    await waitFor(() => expect(global.fetch).toHaveBeenCalledTimes(2));
 
     expect(global.fetch).toHaveBeenCalledWith(
       '/api/admin/tenants',
@@ -126,11 +134,13 @@ describe('TenantForm', () => {
   });
 
   it('redirects to tenant detail page on successful creation', async () => {
-    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
-      ok: true,
-      status: 201,
-      json: async () => ({ id: 'new-uuid', name: 'Test Co', slug: 'test-co' }),
-    });
+    (global.fetch as ReturnType<typeof vi.fn>)
+      .mockResolvedValueOnce({ ok: true, json: async () => [] }) // template fetch
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 201,
+        json: async () => ({ id: 'new-uuid', name: 'Test Co', slug: 'test-co' }),
+      });
 
     render(<TenantForm />);
 
@@ -146,11 +156,13 @@ describe('TenantForm', () => {
   });
 
   it('shows duplicate slug error on 409 response', async () => {
-    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
-      ok: false,
-      status: 409,
-      json: async () => ({ error: 'Duplicate slug' }),
-    });
+    (global.fetch as ReturnType<typeof vi.fn>)
+      .mockResolvedValueOnce({ ok: true, json: async () => [] }) // template fetch
+      .mockResolvedValueOnce({
+        ok: false,
+        status: 409,
+        json: async () => ({ error: 'Duplicate slug' }),
+      });
 
     render(<TenantForm />);
 
@@ -166,9 +178,9 @@ describe('TenantForm', () => {
   });
 
   it('shows generic error message when fetch throws', async () => {
-    (global.fetch as ReturnType<typeof vi.fn>).mockRejectedValueOnce(
-      new Error('Network error'),
-    );
+    (global.fetch as ReturnType<typeof vi.fn>)
+      .mockResolvedValueOnce({ ok: true, json: async () => [] }) // template fetch
+      .mockRejectedValueOnce(new Error('Network error'));
 
     render(<TenantForm />);
 
@@ -184,11 +196,13 @@ describe('TenantForm', () => {
   });
 
   it('shows API error message on non-409 failure', async () => {
-    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
-      ok: false,
-      status: 500,
-      json: async () => ({ error: 'Internal server error' }),
-    });
+    (global.fetch as ReturnType<typeof vi.fn>)
+      .mockResolvedValueOnce({ ok: true, json: async () => [] }) // template fetch
+      .mockResolvedValueOnce({
+        ok: false,
+        status: 500,
+        json: async () => ({ error: 'Internal server error' }),
+      });
 
     render(<TenantForm />);
 
@@ -204,11 +218,13 @@ describe('TenantForm', () => {
   });
 
   it('omits customDomain from request body when left blank', async () => {
-    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
-      ok: true,
-      status: 201,
-      json: async () => ({ id: 'uuid-1', name: 'Test Co', slug: 'test-co' }),
-    });
+    (global.fetch as ReturnType<typeof vi.fn>)
+      .mockResolvedValueOnce({ ok: true, json: async () => [] }) // template fetch
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 201,
+        json: async () => ({ id: 'uuid-1', name: 'Test Co', slug: 'test-co' }),
+      });
 
     render(<TenantForm />);
 
@@ -218,10 +234,11 @@ describe('TenantForm', () => {
 
     fireEvent.click(screen.getByRole('button', { name: /create tenant/i }));
 
-    await waitFor(() => expect(global.fetch).toHaveBeenCalled());
+    await waitFor(() => expect(global.fetch).toHaveBeenCalledTimes(2));
 
+    // mock.calls[1] is the form submit (index 0 is the template fetch)
     const body = JSON.parse(
-      (global.fetch as ReturnType<typeof vi.fn>).mock.calls[0][1].body,
+      (global.fetch as ReturnType<typeof vi.fn>).mock.calls[1][1].body,
     );
     expect(body.customDomain).toBeNull();
   });

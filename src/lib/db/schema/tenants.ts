@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, uuid, jsonb } from 'drizzle-orm/pg-core';
+import { pgTable, text, timestamp, uuid, jsonb, boolean } from 'drizzle-orm/pg-core';
 
 export const tenants = pgTable('tenants', {
   id: uuid('id').defaultRandom().primaryKey(),
@@ -7,6 +7,7 @@ export const tenants = pgTable('tenants', {
   customDomain: text('custom_domain').unique(),
   theme: jsonb('theme').notNull().default({}),
   enabledAddons: text('enabled_addons').array().notNull().default([]),
+  isTemplate: boolean('is_template').notNull().default(false),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 });
