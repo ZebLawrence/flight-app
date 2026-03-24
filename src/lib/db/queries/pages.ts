@@ -25,6 +25,14 @@ export type UpdatePageInput = {
 };
 
 /**
+ * Looks up a page by its primary key.
+ */
+export async function getPageById(id: string): Promise<Page | null> {
+  const rows = await db.select().from(pages).where(eq(pages.id, id)).limit(1);
+  return rows[0] ?? null;
+}
+
+/**
  * Looks up a page by slug scoped to a tenant.
  */
 export async function getPageBySlug(tenantId: string, slug: string): Promise<Page | null> {
