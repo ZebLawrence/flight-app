@@ -57,6 +57,24 @@ export async function toggleAddon(
 }
 
 /**
+ * Inserts a new tenant addon config row with the given config and enabled state.
+ * Used when cloning a tenant to replicate addon configs exactly.
+ */
+export async function createTenantAddonConfig(
+  tenantId: string,
+  addonKey: string,
+  config: Record<string, unknown>,
+  enabled: boolean,
+): Promise<TenantAddonConfig> {
+  const [row] = await db
+    .insert(tenantAddonConfigs)
+    .values({ tenantId, addonKey, config, enabled })
+    .returning();
+
+  return row;
+}
+
+/**
  * Updates the per-tenant JSONB config for an add-on.
  * Creates the config row if it does not yet exist.
  */
