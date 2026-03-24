@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { getTenantById } from '@/lib/db/queries/tenants';
 import TenantEditForm from '@/components/admin/TenantEditForm';
 import ThemeEditorSection from '@/components/admin/ThemeEditorSection';
+import CloneTenantDialog from '@/components/admin/CloneTenantDialog';
 
 export const dynamic = 'force-dynamic';
 
@@ -33,6 +34,7 @@ export default async function TenantDetailPage({ params }: { params: { id: strin
 
         {/* Quick Actions */}
         <div className="flex items-center gap-3">
+          <CloneTenantDialog tenantId={tenant.id} tenantName={tenant.name} />
           <Link
             href={`/admin/tenants/${tenant.id}/pages`}
             className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
