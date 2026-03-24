@@ -42,6 +42,7 @@ export default function PageEditor({ page, tenantId }: PageEditorProps) {
   const [jsonValid, setJsonValid] = useState(true);
 
   const [loading, setLoading] = useState(false);
+  const [previewing, setPreviewing] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
@@ -70,6 +71,27 @@ export default function PageEditor({ page, tenantId }: PageEditorProps) {
     },
     [],
   );
+
+  const handlePreview = useCallback(async () => {
+    // Open a blank tab immediately (synchronous) to avoid popup blockers,
+    // then navigate it to the preview API endpoint. The browser follows the
+    // 302 redirect to the tenant page natively, without CORS restrictions.
+    const newTab = window.open('', '_blank', 'noopener,noreferrer');
+    setPreviewing(true);
+    // Brief pause so React can render the "Generating…" loading state
+    await new Promise<void>((resolve) => setTimeout(resolve, 50));
+    try {
+      if (!newTab) {
+        throw new Error('Popup was blocked');
+      }
+      newTab.location.href = `/api/admin/preview?pageId=${encodeURIComponent(page.id)}`;
+    } catch {
+      if (newTab) newTab.close();
+      setError('Unable to open preview. Please allow pop-ups and try again.');
+    } finally {
+      setPreviewing(false);
+    }
+  }, [page.id]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -226,6 +248,14 @@ export default function PageEditor({ page, tenantId }: PageEditorProps) {
           className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-medium rounded focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
         >
           {loading ? 'Saving…' : 'Save'}
+        </button>
+        <button
+          type="button"
+          onClick={handlePreview}
+          disabled={previewing}
+          className="px-4 py-2 bg-gray-100 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed text-gray-700 text-sm font-medium rounded focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400"
+        >
+          {previewing ? 'Generating…' : 'Preview'}
         </button>
         <Link
           href={`/admin/tenants/${tenantId}/pages`}
