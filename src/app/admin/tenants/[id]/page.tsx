@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { getTenantById } from '@/lib/db/queries/tenants';
 import TenantEditForm from '@/components/admin/TenantEditForm';
+import ThemeEditorSection from '@/components/admin/ThemeEditorSection';
 
 export const dynamic = 'force-dynamic';
 
@@ -48,6 +49,8 @@ export default async function TenantDetailPage({ params }: { params: { id: strin
       </div>
 
       <TenantEditForm tenant={tenant} />
+
+      <ThemeEditorSection tenantId={tenant.id} initialTheme={tenant.theme} />
     </div>
   );
 }

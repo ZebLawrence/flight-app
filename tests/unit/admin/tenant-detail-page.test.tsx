@@ -22,6 +22,11 @@ vi.mock('@/components/admin/TenantEditForm', () => ({
     ({ type: 'div', props: { 'data-testid': 'tenant-edit-form', 'data-tenant-id': tenant.id } }),
 }));
 
+vi.mock('@/components/admin/ThemeEditorSection', () => ({
+  default: ({ tenantId, initialTheme }: { tenantId: string; initialTheme: unknown }) =>
+    ({ type: 'div', props: { 'data-testid': 'theme-editor-section', 'data-tenant-id': tenantId, 'data-initial-theme': JSON.stringify(initialTheme) } }),
+}));
+
 const mockTenant = {
   id: 'uuid-abc',
   name: 'Acme Corp',
@@ -92,5 +97,18 @@ describe('TenantDetailPage', () => {
     // The tenant props are serialized as part of the component element tree
     expect(json).toContain('"tenant"');
     expect(json).toContain('uuid-abc');
+  });
+
+  it('renders the ThemeEditorSection with tenant id and theme', async () => {
+    const tenantWithTheme = {
+      ...mockTenant,
+      theme: { colors: { primary: '#ff0000' } },
+    };
+    mockGetTenantById.mockResolvedValue(tenantWithTheme);
+    const result = await TenantDetailPage({ params: { id: 'uuid-abc' } });
+    const json = JSON.stringify(result);
+    expect(json).toContain('"tenantId"');
+    expect(json).toContain('"initialTheme"');
+    expect(json).toContain('#ff0000');
   });
 });
