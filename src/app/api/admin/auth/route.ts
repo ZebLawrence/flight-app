@@ -1,10 +1,27 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyCredentials, createSession } from '@/lib/auth';
+import { checkRateLimit, LOGIN_RATE_LIMIT } from '@/lib/rate-limit';
 
 const SESSION_COOKIE = 'session';
 const SESSION_MAX_AGE = 60 * 60 * 8; // 8 hours
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
+  const ip =
+    request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ??
+    request.ip ??
+    'unknown';
+  const rateLimitResult = checkRateLimit(ip, LOGIN_RATE_LIMIT);
+
+  if (!rateLimitResult.allowed) {
+    return NextResponse.json(
+      { error: 'Too many attempts' },
+      {
+        status: 429,
+        headers: { 'Retry-After': String(rateLimitResult.retryAfterSeconds) },
+      },
+    );
+  }
+
   let email: string;
   let password: string;
 
