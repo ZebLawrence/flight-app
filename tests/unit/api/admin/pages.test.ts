@@ -6,10 +6,13 @@ const FAKE_TOKEN = 'valid.session.token';
 
 const mockValidateSession = vi.hoisted(() => vi.fn());
 const mockGetPagesByTenant = vi.hoisted(() => vi.fn());
+const mockGetPageById = vi.hoisted(() => vi.fn());
 const mockCreatePage = vi.hoisted(() => vi.fn());
 const mockUpdatePage = vi.hoisted(() => vi.fn());
 const mockDeletePage = vi.hoisted(() => vi.fn());
 const mockReorderPages = vi.hoisted(() => vi.fn());
+const mockCreateVersion = vi.hoisted(() => vi.fn());
+const mockPruneVersions = vi.hoisted(() => vi.fn());
 
 vi.mock('@/lib/auth', () => ({
   validateSession: mockValidateSession,
@@ -17,10 +20,16 @@ vi.mock('@/lib/auth', () => ({
 
 vi.mock('@/lib/db/queries/pages', () => ({
   getPagesByTenant: mockGetPagesByTenant,
+  getPageById: mockGetPageById,
   createPage: mockCreatePage,
   updatePage: mockUpdatePage,
   deletePage: mockDeletePage,
   reorderPages: mockReorderPages,
+}));
+
+vi.mock('@/lib/db/queries/page-versions', () => ({
+  createVersion: mockCreateVersion,
+  pruneVersions: mockPruneVersions,
 }));
 
 const page1 = {
@@ -99,6 +108,9 @@ afterAll(() => {
 beforeEach(() => {
   vi.clearAllMocks();
   mockValidateSession.mockImplementation((token: string) => token === FAKE_TOKEN);
+  mockGetPageById.mockResolvedValue(page1);
+  mockCreateVersion.mockResolvedValue(undefined);
+  mockPruneVersions.mockResolvedValue(undefined);
 });
 
 describe('GET /api/admin/pages', () => {

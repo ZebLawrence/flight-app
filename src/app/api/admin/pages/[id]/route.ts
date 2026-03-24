@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { validateSession } from '@/lib/auth';
-import { updatePage, deletePage } from '@/lib/db/queries/pages';
+import { getPageById, updatePage, deletePage } from '@/lib/db/queries/pages';
+import { createVersion, pruneVersions } from '@/lib/db/queries/page-versions';
 
 function isAuthenticated(request: NextRequest): boolean {
   const token = request.cookies.get('session')?.value;
@@ -24,6 +25,16 @@ export async function PUT(
   }
 
   try {
+    // 1. Fetch current page content
+    const current = await getPageById(params.id);
+    if (!current) {
+      return NextResponse.json({ error: 'Page not found' }, { status: 404 });
+    }
+
+    // 2. Save old state as a version snapshot
+    await createVersion(params.id, current.content, current.title);
+
+    // 3. Update the page with new content
     const page = await updatePage(params.id, {
       title: typeof body.title === 'string' ? body.title : undefined,
       slug: typeof body.slug === 'string' ? body.slug : undefined,
@@ -36,6 +47,10 @@ export async function PUT(
         ? (body.meta as Record<string, unknown>)
         : undefined,
     });
+
+    // 4. Prune versions to keep last 10
+    await pruneVersions(params.id, 10);
+
     return NextResponse.json(page);
   } catch (error: unknown) {
     if (error instanceof Error && error.message.includes('not found')) {
