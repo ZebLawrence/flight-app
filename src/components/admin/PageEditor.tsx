@@ -4,6 +4,7 @@ import { useState, useCallback } from 'react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import type { Page } from '@/lib/db/schema';
+import VersionHistory from '@/components/admin/VersionHistory';
 
 const MonacoEditor = dynamic(() => import('@monaco-editor/react'), { ssr: false });
 
@@ -45,6 +46,29 @@ export default function PageEditor({ page, tenantId }: PageEditorProps) {
   const [previewing, setPreviewing] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+
+  // Version preview state — null means not previewing a historical version
+  const [versionPreviewJson, setVersionPreviewJson] = useState<string | null>(null);
+  const [versionPreviewTitle, setVersionPreviewTitle] = useState<string | null>(null);
+
+  const handleVersionPreview = useCallback((content: string, vTitle: string) => {
+    setVersionPreviewJson(content);
+    setVersionPreviewTitle(vTitle);
+  }, []);
+
+  const handleVersionRestore = useCallback((content: string, vTitle: string) => {
+    setVersionPreviewJson(null);
+    setVersionPreviewTitle(null);
+    setJsonValue(content);
+    setTitle(vTitle);
+    setJsonValid(true);
+    setSuccess('Version restored successfully.');
+  }, []);
+
+  const exitVersionPreview = useCallback(() => {
+    setVersionPreviewJson(null);
+    setVersionPreviewTitle(null);
+  }, []);
 
   const handleTitleChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -196,19 +220,37 @@ export default function PageEditor({ page, tenantId }: PageEditorProps) {
       <div>
         <div className="flex items-center justify-between mb-1">
           <span className="block text-sm font-medium text-gray-700">Content (JSON)</span>
-          {!jsonValid && (
+          {!jsonValid && !versionPreviewJson && (
             <span className="text-xs text-red-600" role="alert">
               JSON is invalid — fix errors before saving
             </span>
           )}
         </div>
+
+        {/* Version preview banner */}
+        {versionPreviewJson && (
+          <div className="flex items-center justify-between mb-2 rounded bg-amber-50 border border-amber-200 px-3 py-2">
+            <span className="text-xs text-amber-800 font-medium">
+              Previewing historical version
+              {versionPreviewTitle ? ` — "${versionPreviewTitle}"` : ''}
+            </span>
+            <button
+              type="button"
+              onClick={exitVersionPreview}
+              className="text-xs text-amber-700 hover:text-amber-900 underline focus:outline-none"
+            >
+              Exit preview
+            </button>
+          </div>
+        )}
+
         <div className="rounded border border-gray-300 overflow-hidden" style={{ height: 480 }}>
           <MonacoEditor
             height="480px"
             language="json"
-            value={jsonValue}
-            onChange={handleEditorChange}
-            onValidate={handleEditorValidation}
+            value={versionPreviewJson ?? jsonValue}
+            onChange={versionPreviewJson ? undefined : handleEditorChange}
+            onValidate={versionPreviewJson ? undefined : handleEditorValidation}
             options={{
               minimap: { enabled: false },
               scrollBeyondLastLine: false,
@@ -217,6 +259,7 @@ export default function PageEditor({ page, tenantId }: PageEditorProps) {
               wordWrap: 'on',
               formatOnPaste: true,
               formatOnType: true,
+              readOnly: versionPreviewJson !== null,
             }}
           />
         </div>
@@ -244,7 +287,7 @@ export default function PageEditor({ page, tenantId }: PageEditorProps) {
       <div className="flex items-center gap-4">
         <button
           type="submit"
-          disabled={loading || !jsonValid}
+          disabled={loading || !jsonValid || versionPreviewJson !== null}
           className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-medium rounded focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
         >
           {loading ? 'Saving…' : 'Save'}
@@ -257,6 +300,11 @@ export default function PageEditor({ page, tenantId }: PageEditorProps) {
         >
           {previewing ? 'Generating…' : 'Preview'}
         </button>
+        <VersionHistory
+          pageId={page.id}
+          onPreview={handleVersionPreview}
+          onRestore={handleVersionRestore}
+        />
         <Link
           href={`/admin/tenants/${tenantId}/pages`}
           className="text-sm text-gray-600 hover:text-gray-900"
