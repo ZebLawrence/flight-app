@@ -4,6 +4,7 @@ import { getTenantById } from '@/lib/db/queries/tenants';
 import TenantEditForm from '@/components/admin/TenantEditForm';
 import ThemeEditorSection from '@/components/admin/ThemeEditorSection';
 import CloneTenantDialog from '@/components/admin/CloneTenantDialog';
+import DeleteTenantButton from '@/components/admin/DeleteTenantButton';
 
 export const dynamic = 'force-dynamic';
 
@@ -47,6 +48,7 @@ export default async function TenantDetailPage({ params }: { params: { id: strin
           >
             Media Library
           </Link>
+          <DeleteTenantButton tenantId={tenant.id} tenantName={tenant.name} />
         </div>
       </div>
 
