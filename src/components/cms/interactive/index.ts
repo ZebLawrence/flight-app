@@ -1,6 +1,7 @@
 import type { ComponentType } from 'react';
 import { Accordion } from './Accordion';
 import { Carousel } from './Carousel';
+import { Modal } from './Modal';
 import { Tabs } from './Tabs';
 
 // Interactive components use the "use client" directive for client-side interactivity.
@@ -8,5 +9,6 @@ import { Tabs } from './Tabs';
 export const interactiveRegistry: Record<string, ComponentType<any>> = {
   Accordion,
   Carousel,
+  Modal,
   Tabs,
 };
