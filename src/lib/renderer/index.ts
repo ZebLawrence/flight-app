@@ -1,6 +1,7 @@
 import React from 'react';
 import type { ComponentNode } from '@/lib/types';
 import type { ComponentType } from 'react';
+import { getComponentAddon } from '@/lib/addons/registry';
 
 // The renderer supports both server and client components ("use client").
 // React.createElement works identically for both during SSR; Next.js handles
@@ -20,6 +21,7 @@ function renderNode(
   node: unknown,
   registry: Record<string, ComponentType<any>>,
   path: string,
+  enabledAddons: string[],
 ): React.ReactNode {
   const isDev = process.env.NODE_ENV !== 'production';
 
@@ -65,6 +67,11 @@ function renderNode(
     return null;
   }
 
+  const addonKey = getComponentAddon(node.type);
+  if (addonKey !== null && !enabledAddons.includes(addonKey)) {
+    return null;
+  }
+
   const Component = registry[node.type];
 
   if (!Component) {
@@ -82,7 +89,7 @@ function renderNode(
 
   if (children && children.length > 0) {
     const renderedChildren = children.map((child, index) =>
-      renderNode(child, registry, `${path}.children[${index}]`),
+      renderNode(child, registry, `${path}.children[${index}]`, enabledAddons),
     );
     return React.createElement(Component, { key: path, ...props }, ...renderedChildren);
   }
@@ -93,6 +100,7 @@ function renderNode(
 export function renderComponentTree(
   node: unknown,
   registry: Record<string, ComponentType<any>>,
+  enabledAddons: string[] = [],
 ): React.ReactNode {
-  return renderNode(node, registry, 'root');
+  return renderNode(node, registry, 'root', enabledAddons);
 }
