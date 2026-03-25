@@ -31,6 +31,19 @@ export type UpdatePostInput = {
 };
 
 /**
+ * Looks up a blog post by id.
+ */
+export async function getPostById(id: string): Promise<BlogPost | null> {
+  const rows = await db
+    .select()
+    .from(blogPosts)
+    .where(eq(blogPosts.id, id))
+    .limit(1);
+
+  return rows[0] ?? null;
+}
+
+/**
  * Looks up a blog post by tenant and slug.
  */
 export async function getPostBySlug(
