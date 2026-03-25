@@ -3,6 +3,11 @@ import { render } from '@testing-library/react';
 import React from 'react';
 import { renderComponentTree } from '@/lib/renderer';
 import { registry } from '@/components/cms/registry';
+import { getComponentAddon } from '@/lib/addons/registry';
+
+vi.mock('@/lib/addons/registry', () => ({
+  getComponentAddon: vi.fn().mockReturnValue(null),
+}));
 
 // A simple Section component for testing nested trees
 const Section = ({ children }: { children?: React.ReactNode }) => (
@@ -12,6 +17,7 @@ const testRegistry = { ...registry, Section };
 
 beforeEach(() => {
   vi.spyOn(console, 'warn').mockImplementation(() => {});
+  vi.mocked(getComponentAddon).mockReturnValue(null);
 });
 
 describe('renderComponentTree', () => {
@@ -229,5 +235,70 @@ describe('renderComponentTree', () => {
     const { container } = render(<>{element}</>);
     expect(container.querySelector('h1')?.textContent).toBe('Server Heading');
     expect(container.querySelector('[data-testid="client-button"]')?.textContent).toBe('Client Action');
+  });
+
+  // Feature gating tests
+  it('core component always renders regardless of enabled addons', () => {
+    // getComponentAddon returns null → core component, never gated
+    vi.mocked(getComponentAddon).mockReturnValue(null);
+    const node = { type: 'Heading', props: { level: 1, text: 'Core Component' } };
+    const element = renderComponentTree(node, testRegistry, []);
+    const { container } = render(<>{element}</>);
+    expect(container.querySelector('h1')?.textContent).toBe('Core Component');
+  });
+
+  it('addon component renders when that addon is in the tenant enabled list', () => {
+    const AddonWidget = ({ label }: { label: string }) => (
+      <div data-testid="addon-widget">{label}</div>
+    );
+    const localRegistry = { ...testRegistry, AddonWidget };
+    vi.mocked(getComponentAddon).mockImplementation((type) =>
+      type === 'AddonWidget' ? 'analytics' : null,
+    );
+    const node = { type: 'AddonWidget', props: { label: 'Addon Enabled' } };
+    const element = renderComponentTree(node, localRegistry, ['analytics']);
+    const { container } = render(<>{element}</>);
+    expect(container.querySelector('[data-testid="addon-widget"]')?.textContent).toBe('Addon Enabled');
+  });
+
+  it('addon component returns null when addon is NOT enabled for the tenant', () => {
+    const AddonWidget = ({ label }: { label: string }) => (
+      <div data-testid="addon-widget">{label}</div>
+    );
+    const localRegistry = { ...testRegistry, AddonWidget };
+    vi.mocked(getComponentAddon).mockImplementation((type) =>
+      type === 'AddonWidget' ? 'analytics' : null,
+    );
+    const node = { type: 'AddonWidget', props: { label: 'Should be hidden' } };
+    const element = renderComponentTree(node, localRegistry, []);
+    expect(element).toBeNull();
+  });
+
+  it('page with mixed core + addon components renders only enabled addon components', () => {
+    const AddonBanner = ({ text }: { text: string }) => (
+      <div data-testid="addon-banner">{text}</div>
+    );
+    const localRegistry = { ...testRegistry, AddonBanner };
+    vi.mocked(getComponentAddon).mockImplementation((type) =>
+      type === 'AddonBanner' ? 'banners' : null,
+    );
+    const node = {
+      type: 'Section',
+      children: [
+        { type: 'Heading', props: { level: 1, text: 'Always Visible' } },
+        { type: 'AddonBanner', props: { text: 'Addon Banner' } },
+      ],
+    };
+    // 'banners' addon is NOT enabled
+    const elementGated = renderComponentTree(node, localRegistry, []);
+    const { container: containerGated } = render(<>{elementGated}</>);
+    expect(containerGated.querySelector('h1')?.textContent).toBe('Always Visible');
+    expect(containerGated.querySelector('[data-testid="addon-banner"]')).toBeNull();
+
+    // 'banners' addon IS enabled
+    const elementEnabled = renderComponentTree(node, localRegistry, ['banners']);
+    const { container: containerEnabled } = render(<>{elementEnabled}</>);
+    expect(containerEnabled.querySelector('h1')?.textContent).toBe('Always Visible');
+    expect(containerEnabled.querySelector('[data-testid="addon-banner"]')?.textContent).toBe('Addon Banner');
   });
 });
