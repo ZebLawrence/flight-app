@@ -9,19 +9,13 @@ export default defineConfig({
     setupFiles: ['./tests/unit/setup.ts'],
     include: ['tests/unit/**/*.test.ts', 'tests/unit/**/*.test.tsx'],
     env: {
-      // Fall back to the standard local-dev credentials from .env.example so
-      // DB integration tests are not skipped when DATABASE_URL is unset.
-      // Override with DATABASE_URL env var in CI or non-default environments.
-      DATABASE_URL:
-        process.env.DATABASE_URL ??
-        'postgresql://postgres:postgres@localhost:5432/flightapp',
-      // Fall back to local MinIO credentials so S3 integration tests are not
-      // skipped when S3_BUCKET/S3_ACCESS_KEY/S3_SECRET_KEY are unset.
-      // Override with env vars in CI or non-default environments.
-      S3_BUCKET: process.env.S3_BUCKET ?? 'flight-app-media',
-      S3_ACCESS_KEY: process.env.S3_ACCESS_KEY ?? 'minioadmin',
-      S3_SECRET_KEY: process.env.S3_SECRET_KEY ?? 'minioadmin',
-      S3_ENDPOINT: process.env.S3_ENDPOINT ?? 'http://localhost:9000',
+      // Pass through DATABASE_URL and S3 credentials only when explicitly set.
+      // DB/S3 integration tests use describe.skipIf to skip when these are absent.
+      ...(process.env.DATABASE_URL ? { DATABASE_URL: process.env.DATABASE_URL } : {}),
+      ...(process.env.S3_BUCKET ? { S3_BUCKET: process.env.S3_BUCKET } : {}),
+      ...(process.env.S3_ACCESS_KEY ? { S3_ACCESS_KEY: process.env.S3_ACCESS_KEY } : {}),
+      ...(process.env.S3_SECRET_KEY ? { S3_SECRET_KEY: process.env.S3_SECRET_KEY } : {}),
+      ...(process.env.S3_ENDPOINT ? { S3_ENDPOINT: process.env.S3_ENDPOINT } : {}),
     },
   },
   resolve: {
