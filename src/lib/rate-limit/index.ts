@@ -44,3 +44,8 @@ export const ADMIN_API_RATE_LIMIT: RateLimitConfig = {
   windowMs: 60_000,
   maxRequests: 60,
 };
+
+export const FORM_SUBMISSION_RATE_LIMIT: RateLimitConfig = {
+  windowMs: 60_000,
+  maxRequests: 5,
+};
