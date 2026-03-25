@@ -298,6 +298,7 @@ export default function BlogEditor({ tenantId, post }: BlogEditorProps) {
           <div className="flex flex-col">
             <span className="block text-xs text-gray-500 mb-1">Preview</span>
             <div
+              data-testid="preview-panel"
               className="min-h-[480px] rounded border border-gray-200 bg-white px-4 py-3 overflow-y-auto text-sm text-gray-800 leading-relaxed [&_h1]:text-2xl [&_h1]:font-bold [&_h1]:mb-3 [&_h2]:text-xl [&_h2]:font-bold [&_h2]:mb-2 [&_h3]:text-lg [&_h3]:font-semibold [&_h3]:mb-2 [&_p]:mb-3 [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:mb-3 [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:mb-3 [&_li]:mb-1 [&_code]:bg-gray-100 [&_code]:px-1 [&_code]:rounded [&_code]:font-mono [&_pre]:bg-gray-100 [&_pre]:p-3 [&_pre]:rounded [&_pre]:overflow-x-auto [&_pre]:mb-3 [&_blockquote]:border-l-4 [&_blockquote]:border-gray-300 [&_blockquote]:pl-4 [&_blockquote]:text-gray-600 [&_blockquote]:mb-3 [&_a]:text-blue-600 [&_a]:underline [&_hr]:border-gray-200 [&_hr]:my-4 [&_table]:w-full [&_table]:border-collapse [&_table]:mb-3 [&_th]:border [&_th]:border-gray-300 [&_th]:px-3 [&_th]:py-1 [&_th]:bg-gray-50 [&_td]:border [&_td]:border-gray-300 [&_td]:px-3 [&_td]:py-1"
               dangerouslySetInnerHTML={{ __html: previewHtml }}
             />
