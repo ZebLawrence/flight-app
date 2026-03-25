@@ -2,6 +2,11 @@ import React from 'react';
 import type { ComponentNode } from '@/lib/types';
 import type { ComponentType } from 'react';
 
+// The renderer supports both server and client components ("use client").
+// React.createElement works identically for both during SSR; Next.js handles
+// hydration automatically. Interactive components are resolved through the
+// interactiveRegistry merged into the top-level registry (src/components/cms/registry.ts).
+
 function isPlainObject(value: unknown): value is Record<string, unknown> {
   return (
     value !== null &&

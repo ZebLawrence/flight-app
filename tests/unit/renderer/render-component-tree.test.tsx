@@ -197,4 +197,37 @@ describe('renderComponentTree', () => {
     const { container } = render(<>{element}</>);
     expect(container.querySelector('h1')?.textContent).toBe('Still renders');
   });
+
+  // Client component hydration pattern tests
+  it('a component with "use client" in the tree renders its SSR initial state without error', () => {
+    // Simulates a client component (has "use client" directive in its source file)
+    const ClientCounter = ({ label }: { label: string }) => (
+      <button data-testid="client-counter">{label}</button>
+    );
+    const localRegistry = { ...testRegistry, ClientCounter };
+    const node = { type: 'ClientCounter', props: { label: 'Click Me' } };
+    const element = renderComponentTree(node, localRegistry);
+    const { container } = render(<>{element}</>);
+    expect(container.querySelector('[data-testid="client-counter"]')).not.toBeNull();
+    expect(container.querySelector('[data-testid="client-counter"]')?.textContent).toBe('Click Me');
+  });
+
+  it('mixed tree with server and client components renders without error', () => {
+    // ClientButton simulates a "use client" component; Heading is a server component
+    const ClientButton = ({ label }: { label: string }) => (
+      <button data-testid="client-button">{label}</button>
+    );
+    const localRegistry = { ...testRegistry, ClientButton };
+    const node = {
+      type: 'Section',
+      children: [
+        { type: 'Heading', props: { level: 1, text: 'Server Heading' } },
+        { type: 'ClientButton', props: { label: 'Client Action' } },
+      ],
+    };
+    const element = renderComponentTree(node, localRegistry);
+    const { container } = render(<>{element}</>);
+    expect(container.querySelector('h1')?.textContent).toBe('Server Heading');
+    expect(container.querySelector('[data-testid="client-button"]')?.textContent).toBe('Client Action');
+  });
 });
