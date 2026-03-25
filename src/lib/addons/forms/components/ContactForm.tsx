@@ -15,11 +15,15 @@ const DEFAULT_FIELDS: FieldConfig[] = [
 ];
 
 export function ContactForm({
+  recipientEmail,
   submitLabel = 'Send Message',
   successMessage = 'Thank you for your message!',
   additionalFields = [],
 }: ContactFormProps) {
-  const fields: FieldConfig[] = [...DEFAULT_FIELDS, ...additionalFields];
+  const recipientField: FieldConfig[] = recipientEmail
+    ? [{ name: 'recipientEmail', label: 'Recipient Email', type: 'hidden' }]
+    : [];
+  const fields: FieldConfig[] = [...DEFAULT_FIELDS, ...recipientField, ...additionalFields];
 
   return (
     <FormBuilder

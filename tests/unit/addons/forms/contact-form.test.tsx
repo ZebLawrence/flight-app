@@ -8,9 +8,9 @@ afterEach(cleanup);
 describe('ContactForm component', () => {
   it('renders name, email, and message fields by default', () => {
     render(<ContactForm />);
-    expect(screen.getByLabelText('Name')).not.toBeNull();
-    expect(screen.getByLabelText('Email')).not.toBeNull();
-    expect(screen.getByLabelText('Message')).not.toBeNull();
+    expect(screen.getByLabelText('Name')).toBeInTheDocument();
+    expect(screen.getByLabelText('Email')).toBeInTheDocument();
+    expect(screen.getByLabelText('Message')).toBeInTheDocument();
   });
 
   it('additionalFields appends extra fields after defaults', () => {
@@ -36,6 +36,6 @@ describe('ContactForm component', () => {
         successMessage="We will be in touch!"
       />,
     );
-    expect(screen.getByRole('button', { name: 'Contact Us' })).not.toBeNull();
+    expect(screen.getByRole('button', { name: 'Contact Us' })).toBeInTheDocument();
   });
 });
