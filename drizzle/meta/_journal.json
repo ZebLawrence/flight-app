@@ -15,6 +15,13 @@
       "when": 1742857596471,
       "tag": "0001_add_is_template_column",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1774398916002,
+      "tag": "0002_condemned_roughhouse",
+      "breakpoints": true
     }
   ]
 }
