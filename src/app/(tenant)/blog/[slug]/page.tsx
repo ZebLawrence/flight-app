@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import { headers } from 'next/headers';
 import { notFound } from 'next/navigation';
 import { getPostBySlug } from '@/lib/db/queries/blog-posts';
@@ -6,21 +7,47 @@ import { resolveTenant } from '@/lib/tenant/resolve';
 
 export const dynamic = 'force-dynamic';
 
+function getHostname(): string {
+  const requestHeaders = headers();
+  return (
+    requestHeaders.get('x-request-hostname') ??
+    requestHeaders.get('x-forwarded-host') ??
+    requestHeaders.get('host') ??
+    ''
+  );
+}
+
 type BlogPostPageProps = {
   params: {
     slug: string;
   };
 };
 
-export default async function BlogPostPage({ params }: BlogPostPageProps) {
-  const requestHeaders = headers();
-  const hostname =
-    requestHeaders.get('x-request-hostname') ??
-    requestHeaders.get('x-forwarded-host') ??
-    requestHeaders.get('host') ??
-    '';
+export async function generateMetadata({ params }: BlogPostPageProps): Promise<Metadata> {
+  const tenant = await resolveTenant(getHostname());
+  if (!tenant) {
+    return {};
+  }
 
-  const tenant = await resolveTenant(hostname);
+  const post = await getPostBySlug(tenant.id, params.slug);
+  if (!post || !post.published) {
+    return {};
+  }
+
+  return {
+    title: post.title,
+    description: post.excerpt,
+    openGraph: {
+      title: post.title,
+      description: post.excerpt ?? undefined,
+      type: 'article',
+      ...(post.featuredImage ? { images: [post.featuredImage] } : {}),
+    },
+  };
+}
+
+export default async function BlogPostPage({ params }: BlogPostPageProps) {
+  const tenant = await resolveTenant(getHostname());
   if (!tenant) {
     notFound();
   }
