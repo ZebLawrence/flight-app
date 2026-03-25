@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { validateSession } from '@/lib/auth';
-import { listTenants, createTenant } from '@/lib/db/queries/tenants';
+import { listTenants, listTemplateTenants, createTenant } from '@/lib/db/queries/tenants';
 
 function isAuthenticated(request: NextRequest): boolean {
   const token = request.cookies.get('session')?.value;
@@ -14,6 +14,12 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   }
 
   const { searchParams } = new URL(request.url);
+
+  if (searchParams.get('is_template') === 'true') {
+    const templates = await listTemplateTenants();
+    return NextResponse.json(templates);
+  }
+
   const limitParam = searchParams.get('limit');
   const offsetParam = searchParams.get('offset');
   const parsedLimit = limitParam !== null ? parseInt(limitParam, 10) : NaN;

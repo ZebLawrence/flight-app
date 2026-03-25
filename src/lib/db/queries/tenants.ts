@@ -12,6 +12,7 @@ export type CreateTenantInput = {
   customDomain?: string | null;
   theme?: Record<string, unknown>;
   enabledAddons?: string[];
+  isTemplate?: boolean;
 };
 
 export type UpdateTenantInput = {
@@ -20,6 +21,7 @@ export type UpdateTenantInput = {
   customDomain?: string | null;
   theme?: Record<string, unknown>;
   enabledAddons?: string[];
+  isTemplate?: boolean;
 };
 
 /**
@@ -78,11 +80,18 @@ export async function listTenants(
   const offset = opts?.offset ?? 0;
 
   const [data, [{ value: total }]] = await Promise.all([
-    db.select().from(tenants).limit(limit).offset(offset),
-    db.select({ value: count() }).from(tenants),
+    db.select().from(tenants).where(eq(tenants.isTemplate, false)).limit(limit).offset(offset),
+    db.select({ value: count() }).from(tenants).where(eq(tenants.isTemplate, false)),
   ]);
 
   return { data, total };
+}
+
+/**
+ * Returns all template tenants (is_template = true).
+ */
+export async function listTemplateTenants(): Promise<Tenant[]> {
+  return db.select().from(tenants).where(eq(tenants.isTemplate, true));
 }
 
 /**
@@ -97,6 +106,7 @@ export async function createTenant(input: CreateTenantInput): Promise<Tenant> {
       customDomain: input.customDomain ?? null,
       theme: input.theme ?? {},
       enabledAddons: input.enabledAddons ?? [],
+      isTemplate: input.isTemplate ?? false,
     })
     .returning();
 
