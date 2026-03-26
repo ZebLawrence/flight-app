@@ -1,5 +1,6 @@
 import type { AddonModule } from './types';
 import { registry } from '@/components/cms/registry';
+import { analyticsAddon } from './analytics/index';
 import { calendarAddon } from './calendar';
 import { formsAddon } from './forms';
 import { galleryAddon } from './gallery';
@@ -30,6 +31,7 @@ export function getComponentAddon(componentType: string): string | null {
 }
 
 export function registerBuiltinAddons(): void {
+  registerAddon(analyticsAddon);
   registerAddon(calendarAddon);
   registerAddon(formsAddon);
   registerAddon(galleryAddon);
