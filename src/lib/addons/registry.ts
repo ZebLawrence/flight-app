@@ -1,6 +1,7 @@
 import type { AddonModule } from './types';
 import { registry } from '@/components/cms/registry';
 import { formsAddon } from './forms';
+import { galleryAddon } from './gallery';
 
 const addonStore = new Map<string, AddonModule>();
 const componentOwnerMap = new Map<string, string>();
@@ -29,4 +30,5 @@ export function getComponentAddon(componentType: string): string | null {
 
 export function registerBuiltinAddons(): void {
   registerAddon(formsAddon);
+  registerAddon(galleryAddon);
 }
