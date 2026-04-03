@@ -7,7 +7,9 @@ export interface SeoAddonConfig {
 }
 
 /**
- * Generates an Organization JSON-LD script tag for the given tenant config.
+ * Generates the Organization JSON-LD content for the given tenant config.
+ * Returns a JSON string (without wrapping script tags) ready to pass to
+ * dangerouslySetInnerHTML or similar APIs.
  * The logo property is omitted when not provided.
  */
 export function generateOrganizationSchema(config: SeoAddonConfig): string {
@@ -20,7 +22,7 @@ export function generateOrganizationSchema(config: SeoAddonConfig): string {
   if (config.logo) {
     schema.logo = config.logo;
   }
-  return `<script type="application/ld+json">${JSON.stringify(schema)}</script>`;
+  return JSON.stringify(schema);
 }
 
 /**

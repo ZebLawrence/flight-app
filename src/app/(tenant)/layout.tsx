@@ -94,11 +94,7 @@ export default async function TenantLayout({ children }: { children: ReactNode }
         <Script
           id="seo-organization-schema"
           type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: organizationSchemaHtml
-              .replace(/^<script[^>]*>/, '')
-              .replace(/<\/script>$/, ''),
-          }}
+          dangerouslySetInnerHTML={{ __html: organizationSchemaHtml }}
         />
       )}
       <ThemeProvider theme={tenant?.theme ?? null}>

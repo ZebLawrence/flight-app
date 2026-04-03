@@ -8,38 +8,28 @@ describe('SEO addon — Organization schema', () => {
     logo: 'https://cdn.example.com/logo.png',
   };
 
-  function parseSchema(html: string): Record<string, string> {
-    const jsonStr = html
-      .replace(/^<script[^>]*>/, '')
-      .replace(/<\/script>$/, '');
-    return JSON.parse(jsonStr) as Record<string, string>;
-  }
-
   it('Generated JSON-LD has @type: "Organization"', () => {
-    const schema = parseSchema(generateOrganizationSchema(config));
+    const schema = JSON.parse(generateOrganizationSchema(config)) as Record<string, string>;
     expect(schema['@type']).toBe('Organization');
   });
 
   it('Contains tenant name', () => {
-    const html = generateOrganizationSchema(config);
-    expect(html).toContain(config.name);
+    const jsonStr = generateOrganizationSchema(config);
+    expect(jsonStr).toContain(config.name);
   });
 
   it('Contains tenant URL', () => {
-    const html = generateOrganizationSchema(config);
-    expect(html).toContain(config.url);
+    const jsonStr = generateOrganizationSchema(config);
+    expect(jsonStr).toContain(config.url);
   });
 
   it('Contains logo URL when provided', () => {
-    const html = generateOrganizationSchema(config);
-    expect(html).toContain(config.logo);
+    const jsonStr = generateOrganizationSchema(config);
+    expect(jsonStr).toContain(config.logo);
   });
 
   it('Is valid JSON (parseable without error)', () => {
-    const html = generateOrganizationSchema(config);
-    const jsonStr = html
-      .replace(/^<script[^>]*>/, '')
-      .replace(/<\/script>$/, '');
+    const jsonStr = generateOrganizationSchema(config);
     expect(() => JSON.parse(jsonStr)).not.toThrow();
   });
 });
