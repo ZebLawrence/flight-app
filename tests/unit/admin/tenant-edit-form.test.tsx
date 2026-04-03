@@ -48,10 +48,29 @@ describe('TenantEditForm', () => {
     expect(screen.getByText('acme.example.com')).toBeInTheDocument();
   });
 
+  it('shows CNAME target platform.yourhost.com when custom domain is configured', () => {
+    render(<TenantEditForm tenant={mockTenant} />);
+    fireEvent.click(screen.getByRole('button', { name: /domain settings/i }));
+    expect(screen.getByText('platform.yourhost.com')).toBeInTheDocument();
+  });
+
+  it('shows propagation note when custom domain is configured', () => {
+    render(<TenantEditForm tenant={mockTenant} />);
+    fireEvent.click(screen.getByRole('button', { name: /domain settings/i }));
+    expect(screen.getByText(/up to 48 hours/i)).toBeInTheDocument();
+  });
+
   it('shows no custom domain message when customDomain is null', () => {
     render(<TenantEditForm tenant={{ ...mockTenant, customDomain: null }} />);
     fireEvent.click(screen.getByRole('button', { name: /domain settings/i }));
     expect(screen.getByText(/no custom domain configured/i)).toBeInTheDocument();
+  });
+
+  it('does not show DNS instructions when customDomain is null', () => {
+    render(<TenantEditForm tenant={{ ...mockTenant, customDomain: null }} />);
+    fireEvent.click(screen.getByRole('button', { name: /domain settings/i }));
+    expect(screen.queryByText(/dns setup instructions/i)).not.toBeInTheDocument();
+    expect(screen.queryByText('platform.yourhost.com')).not.toBeInTheDocument();
   });
 
   it('PUTs to /api/admin/tenants/[id] with updated values', async () => {
