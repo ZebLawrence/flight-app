@@ -5,6 +5,15 @@ import { resolveTenant } from '@/lib/tenant/resolve';
 
 export const dynamic = 'force-dynamic';
 
+function escapeXml(str: string): string {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;');
+}
+
 export async function GET() {
   const requestHeaders = headers();
   const hostname =
@@ -29,13 +38,13 @@ export async function GET() {
   const publishedPages = pages.filter((page) => page.published);
 
   const pageUrls = publishedPages.map((page) => {
-    const loc = `${tenantBaseUrl}/${page.slug}`;
+    const loc = escapeXml(`${tenantBaseUrl}/${page.slug}`);
     const lastmod = new Date(page.updatedAt).toISOString();
     return `  <url>\n    <loc>${loc}</loc>\n    <lastmod>${lastmod}</lastmod>\n  </url>`;
   });
 
   const postUrls = posts.map((post) => {
-    const loc = `${tenantBaseUrl}/blog/${post.slug}`;
+    const loc = escapeXml(`${tenantBaseUrl}/blog/${post.slug}`);
     const lastmod = new Date(post.updatedAt).toISOString();
     return `  <url>\n    <loc>${loc}</loc>\n    <lastmod>${lastmod}</lastmod>\n  </url>`;
   });
