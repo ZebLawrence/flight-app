@@ -9,3 +9,6 @@ dist
 .env*.local
 .env.prod
 tsconfig.tsbuildinfo
+
+# Build artifacts
+scripts/migrate.js
