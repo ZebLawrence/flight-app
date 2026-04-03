@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import { getPostBySlug } from '@/lib/db/queries/blog-posts';
 import { markdownToHtml } from '@/lib/markdown';
 import { resolveTenant } from '@/lib/tenant/resolve';
+import { generateArticleSchema } from '@/lib/addons/seo';
 
 export const dynamic = 'force-dynamic';
 
@@ -60,6 +61,14 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
 
   const contentHtml = await markdownToHtml(post.content);
 
+  const articleSchema = generateArticleSchema({
+    title: post.title,
+    author: post.author,
+    publishedAt: post.publishedAt,
+    excerpt: post.excerpt,
+    featuredImage: post.featuredImage,
+  });
+
   const publishedDate = post.publishedAt
     ? new Date(post.publishedAt).toLocaleDateString('en-US', {
         year: 'numeric',
@@ -70,6 +79,10 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
 
   return (
     <article className="mx-auto max-w-3xl px-4 py-10">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: articleSchema }}
+      />
       {post.featuredImage && (
         // eslint-disable-next-line @next/next/no-img-element
         <img
