@@ -14,22 +14,28 @@ describe('SEO addon — Organization schema', () => {
   });
 
   it('Contains tenant name', () => {
-    const jsonStr = generateOrganizationSchema(config);
-    expect(jsonStr).toContain(config.name);
+    const schema = JSON.parse(generateOrganizationSchema(config)) as Record<string, string>;
+    expect(schema.name).toBe(config.name);
   });
 
   it('Contains tenant URL', () => {
-    const jsonStr = generateOrganizationSchema(config);
-    expect(jsonStr).toContain(config.url);
+    const schema = JSON.parse(generateOrganizationSchema(config)) as Record<string, string>;
+    expect(schema.url).toBe(config.url);
   });
 
   it('Contains logo URL when provided', () => {
-    const jsonStr = generateOrganizationSchema(config);
-    expect(jsonStr).toContain(config.logo);
+    const schema = JSON.parse(generateOrganizationSchema(config)) as Record<string, string>;
+    expect(schema.logo).toBe(config.logo);
   });
 
   it('Is valid JSON (parseable without error)', () => {
     const jsonStr = generateOrganizationSchema(config);
     expect(() => JSON.parse(jsonStr)).not.toThrow();
+  });
+
+  it('Omits logo property when logo is not provided', () => {
+    const { logo: _logo, ...configWithoutLogo } = config;
+    const schema = JSON.parse(generateOrganizationSchema(configWithoutLogo)) as Record<string, unknown>;
+    expect('logo' in schema).toBe(false);
   });
 });
