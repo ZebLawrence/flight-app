@@ -7,10 +7,12 @@ export type ComponentNode = {
 };
 
 export interface PageMeta {
+  title?: string;
   description?: string;
   ogTitle?: string;
   ogDescription?: string;
   ogImage?: string;      // URL to OG image
+  ogType?: 'website' | 'article' | 'book' | 'profile';
   canonicalUrl?: string;
 }
 

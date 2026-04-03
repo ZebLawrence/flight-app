@@ -1,13 +1,15 @@
 import { and, eq } from 'drizzle-orm';
+import type { Metadata } from 'next';
 import { headers } from 'next/headers';
 import { notFound } from 'next/navigation';
 import { registry } from '@/components/cms/registry';
 import { isAnalyticsConfig } from '@/lib/addons/analytics';
-import { getPageById } from '@/lib/db/queries/pages';
+import { getPageById, getPageBySlug } from '@/lib/db/queries/pages';
 import type { Page } from '@/lib/db/schema';
 import { validatePreviewToken } from '@/lib/preview';
 import { renderComponentTree } from '@/lib/renderer';
 import { resolveTenant } from '@/lib/tenant/resolve';
+import type { PageMeta } from '@/lib/types/component';
 
 export const dynamic = 'force-dynamic';
 
@@ -20,6 +22,43 @@ type TenantPageProps = {
   };
 };
 
+function getHostname(): string {
+  const requestHeaders = headers();
+  return (
+    requestHeaders.get('x-request-hostname') ??
+    requestHeaders.get('x-forwarded-host') ??
+    requestHeaders.get('host') ??
+    ''
+  );
+}
+
+export async function generateMetadata({ params }: TenantPageProps): Promise<Metadata> {
+  const tenant = await resolveTenant(getHostname());
+  if (!tenant) {
+    return {};
+  }
+
+  const pageSlug = params.slug?.join('/') ?? '';
+  const page = await getPageBySlug(tenant.id, pageSlug);
+
+  if (!page || !page.published) {
+    return {};
+  }
+
+  const meta = page.meta as PageMeta | null | undefined;
+
+  return {
+    title: meta?.title ?? page.title,
+    description: meta?.description,
+    openGraph: {
+      title: meta?.ogTitle ?? meta?.title ?? page.title,
+      description: meta?.ogDescription ?? meta?.description,
+      ...(meta?.ogImage ? { images: [meta.ogImage] } : {}),
+      type: meta?.ogType ?? 'website',
+    },
+  };
+}
+
 export default async function TenantPage({ params, searchParams }: TenantPageProps) {
   const [{ db }, schema] = await Promise.all([
     import('@/lib/db'),
@@ -27,14 +66,7 @@ export default async function TenantPage({ params, searchParams }: TenantPagePro
   ]);
   const { pages, tenantAddonConfigs } = schema;
 
-  const requestHeaders = headers();
-  const hostname =
-    requestHeaders.get('x-request-hostname') ??
-    requestHeaders.get('x-forwarded-host') ??
-    requestHeaders.get('host') ??
-    '';
-
-  const tenant = await resolveTenant(hostname);
+  const tenant = await resolveTenant(getHostname());
   if (!tenant) {
     notFound();
   }
