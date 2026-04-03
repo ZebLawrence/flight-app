@@ -33,7 +33,8 @@ function getHostname(): string {
 }
 
 export async function generateMetadata({ params }: TenantPageProps): Promise<Metadata> {
-  const tenant = await resolveTenant(getHostname());
+  const hostname = getHostname();
+  const tenant = await resolveTenant(hostname);
   if (!tenant) {
     return {};
   }
@@ -47,9 +48,16 @@ export async function generateMetadata({ params }: TenantPageProps): Promise<Met
 
   const meta = page.meta as PageMeta | null | undefined;
 
+  const tenantDomain = tenant.customDomain ?? hostname;
+  const canonicalPath = pageSlug ? `/${pageSlug}` : '/';
+  const canonicalUrl = `https://${tenantDomain}${canonicalPath}`;
+
   return {
     title: meta?.title ?? page.title,
     description: meta?.description,
+    alternates: {
+      canonical: canonicalUrl,
+    },
     openGraph: {
       title: meta?.ogTitle ?? meta?.title ?? page.title,
       description: meta?.ogDescription ?? meta?.description,
