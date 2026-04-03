@@ -1,3 +1,4 @@
+import { unstable_cache } from 'next/cache';
 import { eq, count, and, inArray, sql } from 'drizzle-orm';
 import { db } from '@/lib/db';
 import { pages } from '@/lib/db/schema';
@@ -24,18 +25,16 @@ export type UpdatePageInput = {
   meta?: Record<string, unknown> | null;
 };
 
-/**
- * Looks up a page by its primary key.
- */
-export async function getPageById(id: string): Promise<Page | null> {
+// ---------------------------------------------------------------------------
+// Private (uncached) DB implementations
+// ---------------------------------------------------------------------------
+
+async function _getPageById(id: string): Promise<Page | null> {
   const rows = await db.select().from(pages).where(eq(pages.id, id)).limit(1);
   return rows[0] ?? null;
 }
 
-/**
- * Looks up a page by slug scoped to a tenant.
- */
-export async function getPageBySlug(tenantId: string, slug: string): Promise<Page | null> {
+async function _getPageBySlug(tenantId: string, slug: string): Promise<Page | null> {
   const rows = await db
     .select()
     .from(pages)
@@ -45,22 +44,58 @@ export async function getPageBySlug(tenantId: string, slug: string): Promise<Pag
   return rows[0] ?? null;
 }
 
-/**
- * Returns a paginated list of pages for a tenant with the total count.
- */
-export async function getPagesByTenant(
+async function _getPagesByTenant(
   tenantId: string,
-  opts?: { limit?: number; offset?: number },
+  limit: number,
+  offset: number,
 ): Promise<{ data: Page[]; total: number }> {
-  const limit = opts?.limit ?? 50;
-  const offset = opts?.offset ?? 0;
-
   const [data, [{ value: total }]] = await Promise.all([
     db.select().from(pages).where(eq(pages.tenantId, tenantId)).limit(limit).offset(offset),
     db.select({ value: count() }).from(pages).where(eq(pages.tenantId, tenantId)),
   ]);
 
   return { data, total };
+}
+
+// ---------------------------------------------------------------------------
+// Cached exports for lookup queries (revalidate: 60 s)
+// Dynamic arguments are included in keyParts so each unique input has its
+// own cache entry.
+// ---------------------------------------------------------------------------
+
+/**
+ * Looks up a page by its primary key.
+ */
+export async function getPageById(id: string): Promise<Page | null> {
+  return unstable_cache(_getPageById, ['page-by-id', id], {
+    revalidate: 60,
+    tags: ['pages'],
+  })(id);
+}
+
+/**
+ * Looks up a page by slug scoped to a tenant.
+ * Tagged with both `pages` and `tenant-{tenantId}` for per-tenant invalidation.
+ */
+export async function getPageBySlug(tenantId: string, slug: string): Promise<Page | null> {
+  return unstable_cache(_getPageBySlug, ['page-by-slug', tenantId], {
+    revalidate: 60,
+    tags: ['pages', `tenant-${tenantId}`],
+  })(tenantId, slug);
+}
+
+/**
+ * Returns a paginated list of pages for a tenant with the total count.
+ * Tagged with both `pages` and `tenant-{tenantId}` for per-tenant invalidation.
+ */
+export async function getPagesByTenant(
+  tenantId: string,
+  opts?: { limit?: number; offset?: number },
+): Promise<{ data: Page[]; total: number }> {
+  return unstable_cache(_getPagesByTenant, ['pages-by-tenant', tenantId], {
+    revalidate: 60,
+    tags: ['pages', `tenant-${tenantId}`],
+  })(tenantId, opts?.limit ?? 50, opts?.offset ?? 0);
 }
 
 /**
