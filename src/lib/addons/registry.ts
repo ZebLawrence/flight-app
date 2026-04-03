@@ -4,6 +4,7 @@ import { analyticsAddon } from './analytics/index';
 import { calendarAddon } from './calendar';
 import { formsAddon } from './forms';
 import { galleryAddon } from './gallery';
+import { seoAddon } from './seo';
 
 const addonStore = new Map<string, AddonModule>();
 const componentOwnerMap = new Map<string, string>();
@@ -35,4 +36,5 @@ export function registerBuiltinAddons(): void {
   registerAddon(calendarAddon);
   registerAddon(formsAddon);
   registerAddon(galleryAddon);
+  registerAddon(seoAddon);
 }

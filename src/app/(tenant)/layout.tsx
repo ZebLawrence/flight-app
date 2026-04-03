@@ -6,6 +6,8 @@ import { resolveTenant } from '@/lib/tenant/resolve';
 import { getTenantAddons } from '@/lib/db/queries/addons';
 import { generateAnalyticsScript } from '@/lib/addons/analytics';
 import type { AnalyticsAddonConfig } from '@/lib/addons/analytics';
+import { generateOrganizationSchema } from '@/lib/addons/seo';
+import type { TenantTheme } from '@/lib/types/theme';
 
 export const dynamic = 'force-dynamic';
 
@@ -32,6 +34,7 @@ export default async function TenantLayout({ children }: { children: ReactNode }
   const tenant = await resolveTenant(hostname);
 
   let analyticsConfig: AnalyticsAddonConfig | null = null;
+  let organizationSchemaHtml: string | null = null;
   if (tenant) {
     const addonConfigs = await getTenantAddons(tenant.id);
     const enabledAnalytics = addonConfigs.find(c => c.addonKey === 'analytics' && c.enabled);
@@ -40,6 +43,18 @@ export default async function TenantLayout({ children }: { children: ReactNode }
       if (parsed && generateAnalyticsScript(parsed)) {
         analyticsConfig = parsed;
       }
+    }
+    const enabledSeo = addonConfigs.find(c => c.addonKey === 'seo' && c.enabled);
+    if (enabledSeo) {
+      const theme = tenant.theme as Partial<TenantTheme> | null;
+      const tenantUrl = tenant.customDomain
+        ? `https://${tenant.customDomain}`
+        : `https://${hostname}`;
+      organizationSchemaHtml = generateOrganizationSchema({
+        name: tenant.name,
+        url: tenantUrl,
+        logo: theme?.logo,
+      });
     }
   }
 
@@ -73,6 +88,13 @@ export default async function TenantLayout({ children }: { children: ReactNode }
           id="analytics-custom"
           strategy="beforeInteractive"
           dangerouslySetInnerHTML={{ __html: analyticsConfig.customScript }}
+        />
+      )}
+      {organizationSchemaHtml && (
+        <Script
+          id="seo-organization-schema"
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: organizationSchemaHtml }}
         />
       )}
       <ThemeProvider theme={tenant?.theme ?? null}>
