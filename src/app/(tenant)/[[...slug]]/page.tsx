@@ -76,20 +76,20 @@ export default async function TenantPage({ params, searchParams }: TenantPagePro
       .where(
         and(
           eq(tenantAddonConfigs.tenantId, tenant.id),
-          eq(tenantAddonConfigs.addonKey, 'analytics'),
           eq(tenantAddonConfigs.enabled, true),
         ),
-      )
-      .limit(1),
+      ),
   ]);
 
   if (!page) {
     notFound();
   }
 
-  const renderedTree = renderComponentTree(page.content, registry);
+  const enabledAddons = addonRows.map((row) => row.addonKey);
+  const renderedTree = renderComponentTree(page.content, registry, enabledAddons);
 
-  const analyticsConfig = addonRows[0]?.config;
+  const analyticsRow = addonRows.find((row) => row.addonKey === 'analytics');
+  const analyticsConfig = analyticsRow?.config;
   const validConfig = isAnalyticsConfig(analyticsConfig) ? analyticsConfig : null;
 
   // Both trackingId and domain are validated by isAnalyticsConfig to only contain
