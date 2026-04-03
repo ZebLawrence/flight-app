@@ -6,6 +6,9 @@ import type { Tenant } from '@/lib/db/queries/tenants';
 
 type Tab = 'basic' | 'domain';
 
+const PLATFORM_HOST =
+  process.env.NEXT_PUBLIC_PLATFORM_HOST ?? 'platform.yourhost.com';
+
 interface TenantEditFormProps {
   tenant: Tenant;
 }
@@ -192,50 +195,58 @@ export default function TenantEditForm({ tenant }: TenantEditFormProps) {
       {/* Domain Settings Tab */}
       {activeTab === 'domain' && (
         <div className="max-w-lg space-y-4">
-          <p className="text-sm text-gray-700">
-            To use a custom domain for this tenant, point a <strong>CNAME</strong> record
-            at your platform&apos;s hostname and enter the domain in the{' '}
-            <button
-              type="button"
-              onClick={() => setActiveTab('basic')}
-              className="text-blue-600 hover:underline"
-            >
-              Basic Info
-            </button>{' '}
-            tab.
-          </p>
-
-          <div className="rounded border border-gray-200 bg-gray-50 p-4 space-y-3">
-            <h2 className="text-sm font-semibold text-gray-900">DNS Setup Instructions</h2>
-            <ol className="list-decimal list-inside space-y-2 text-sm text-gray-700">
-              <li>
-                Log in to your DNS provider (e.g. Cloudflare, Route 53, Namecheap).
-              </li>
-              <li>
-                Add a <strong>CNAME</strong> record pointing your custom domain to{' '}
-                <code className="rounded bg-gray-100 px-1 py-0.5 text-xs font-mono">
-                  {tenant.slug}.yourdomain.com
-                </code>
-                .
-              </li>
-              <li>
-                Wait for DNS propagation (typically up to 48 hours).
-              </li>
-              <li>
-                Enter the custom domain in the Basic Info tab and save.
-              </li>
-            </ol>
-          </div>
-
           {tenant.customDomain ? (
-            <p className="text-sm text-gray-700">
-              <span className="font-medium">Current custom domain:</span>{' '}
-              <code className="rounded bg-gray-100 px-1 py-0.5 text-xs font-mono">
-                {tenant.customDomain}
-              </code>
-            </p>
+            <>
+              <p className="text-sm text-gray-700">
+                <span className="font-medium">Current custom domain:</span>{' '}
+                <code className="rounded bg-gray-100 px-1 py-0.5 text-xs font-mono">
+                  {tenant.customDomain}
+                </code>
+              </p>
+
+              <div className="rounded border border-blue-200 bg-blue-50 p-4 space-y-3">
+                <h2 className="text-sm font-semibold text-gray-900">DNS Setup Instructions</h2>
+                <p className="text-sm text-gray-700">
+                  Ask your client to add the following <strong>CNAME</strong> record with their
+                  DNS provider (e.g. Cloudflare, Route 53, Namecheap):
+                </p>
+                <div className="rounded border border-gray-200 bg-white p-3 text-xs font-mono space-y-1">
+                  <div>
+                    <span className="text-gray-500">Type:</span>{' '}
+                    <span className="text-gray-900">CNAME</span>
+                  </div>
+                  <div>
+                    <span className="text-gray-500">Name:</span>{' '}
+                    <span className="text-gray-900">www</span>
+                    <span className="text-gray-400 ml-1">(or the desired subdomain)</span>
+                  </div>
+                  <div>
+                    <span className="text-gray-500">Value:</span>{' '}
+                    <span className="text-gray-900">{PLATFORM_HOST}</span>
+                  </div>
+                </div>
+                <p className="text-xs text-gray-500">
+                  DNS propagation typically completes within a few hours but can take{' '}
+                  <strong>up to 48 hours</strong>. Once propagated, the custom domain will
+                  resolve to this tenant&apos;s site automatically.
+                </p>
+              </div>
+            </>
           ) : (
-            <p className="text-sm text-gray-500 italic">No custom domain configured.</p>
+            <>
+              <p className="text-sm text-gray-500 italic">No custom domain configured.</p>
+              <p className="text-sm text-gray-700">
+                Enter a custom domain in the{' '}
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('basic')}
+                  className="text-blue-600 hover:underline"
+                >
+                  Basic Info
+                </button>{' '}
+                tab to view CNAME configuration details.
+              </p>
+            </>
           )}
         </div>
       )}
