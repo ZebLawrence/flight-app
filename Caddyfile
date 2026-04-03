@@ -1,0 +1,45 @@
+{
+	# Global options
+
+	# on_demand_tls tells Caddy to ask the app whether it should issue
+	# a certificate for an arbitrary custom domain. This prevents abuse of
+	# Let's Encrypt rate limits by blocking domains not registered in the
+	# platform. The app must return HTTP 200 for approved domains.
+	# HTTP is intentional here: this call stays within the private Docker
+	# bridge network and never leaves the host, so plain HTTP is safe.
+	on_demand_tls {
+		ask http://app:3000/api/check-domain
+	}
+}
+
+# ── Wildcard subdomain tenants ──────────────────────────────────────────────
+# Covers *.platform.com (e.g. acme.platform.com).
+# Wildcard certificates require a DNS-01 ACME challenge.
+# Replace <dns_provider> with the Caddy DNS plugin for your registrar, e.g.:
+#   "cloudflare"     → github.com/caddy-dns/cloudflare
+#   "route53"        → github.com/caddy-dns/route53
+#   "digitalocean"   → github.com/caddy-dns/digitalocean
+# The chosen plugin must be compiled into the Caddy binary (use xcaddy or a
+# custom Dockerfile FROM caddy:2-builder). Export the credentials required by
+# the plugin as environment variables before starting Caddy.
+*.platform.com {
+	tls {
+		dns <dns_provider>
+	}
+
+	reverse_proxy app:3000
+}
+
+# ── Custom domain tenants ────────────────────────────────────────────────────
+# Matches any HTTPS request not covered by the wildcard block above.
+# Caddy provisions a Let's Encrypt certificate on first request
+# (HTTP-01 challenge) provided that:
+#   1. The domain's DNS A/AAAA record already points to this server.
+#   2. /api/check-domain returns HTTP 200 for that domain (anti-abuse guard).
+https:// {
+	tls {
+		on_demand
+	}
+
+	reverse_proxy app:3000
+}
