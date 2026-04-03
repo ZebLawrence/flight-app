@@ -1,0 +1,12 @@
+.git
+.github
+.next
+node_modules
+.env
+.env.local
+.env*.local
+test-results
+tests
+plan
+progress.txt
+*.md
