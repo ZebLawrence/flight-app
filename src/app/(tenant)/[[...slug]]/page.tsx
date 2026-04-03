@@ -85,8 +85,8 @@ export default async function TenantPage({ params, searchParams }: TenantPagePro
     notFound();
   }
 
-  const enabledAddonKeys = addonRows.map((row) => row.addonKey);
-  const renderedTree = renderComponentTree(page.content, registry, enabledAddonKeys);
+  const enabledAddons = addonRows.map((row) => row.addonKey);
+  const renderedTree = renderComponentTree(page.content, registry, enabledAddons);
 
   const analyticsRow = addonRows.find((row) => row.addonKey === 'analytics');
   const analyticsConfig = analyticsRow?.config;

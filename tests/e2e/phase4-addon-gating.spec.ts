@@ -1,8 +1,9 @@
 import { test, expect } from '@playwright/test';
 
 const DEMO_URL = 'http://demo.localhost:3000';
-const ADDON_API = 'http://localhost:3000/api/internal/addon-config';
-const SEED_PAGE_API = 'http://localhost:3000/api/internal/seed-page';
+const BASE_URL = 'http://localhost:3000';
+const ADDON_API = `${BASE_URL}/api/internal/addon-config`;
+const SEED_PAGE_API = `${BASE_URL}/api/internal/seed-page`;
 
 const FORMS_SLUG = 'addon-gating-forms';
 const GALLERY_SLUG = 'addon-gating-gallery';
