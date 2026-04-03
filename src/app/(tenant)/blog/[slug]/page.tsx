@@ -6,7 +6,7 @@ import { markdownToHtml } from '@/lib/markdown';
 import { resolveTenant } from '@/lib/tenant/resolve';
 import { generateArticleSchema } from '@/lib/addons/seo';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 60;
 
 function getHostname(): string {
   const requestHeaders = headers();
