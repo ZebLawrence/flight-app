@@ -6,6 +6,9 @@ import type { Tenant } from '@/lib/db/queries/tenants';
 
 type Tab = 'basic' | 'domain';
 
+const PLATFORM_HOST =
+  process.env.NEXT_PUBLIC_PLATFORM_HOST ?? 'platform.yourhost.com';
+
 interface TenantEditFormProps {
   tenant: Tenant;
 }
@@ -219,7 +222,7 @@ export default function TenantEditForm({ tenant }: TenantEditFormProps) {
                   </div>
                   <div>
                     <span className="text-gray-500">Value:</span>{' '}
-                    <span className="text-gray-900">platform.yourhost.com</span>
+                    <span className="text-gray-900">{PLATFORM_HOST}</span>
                   </div>
                 </div>
                 <p className="text-xs text-gray-500">

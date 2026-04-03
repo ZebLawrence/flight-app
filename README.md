@@ -19,7 +19,7 @@ Clients who want to use a custom domain (e.g. `www.clientdomain.com`) must point
    |-------|-------|
    | Type  | `CNAME` |
    | Name  | `www` (or the subdomain you want to use) |
-   | Value | `platform.yourhost.com` |
+   | Value | `platform.yourhost.com` (set via `NEXT_PUBLIC_PLATFORM_HOST`) |
 
 3. Save the record and allow time for DNS propagation — this typically takes **up to 48 hours**, though it often completes within a few hours.
 4. Once the record has propagated, enter the custom domain in the tenant's **Basic Info** settings in the admin panel and save.
