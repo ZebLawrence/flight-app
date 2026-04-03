@@ -6,8 +6,10 @@ services:
     container_name: flight-app
     restart: unless-stopped
     depends_on:
-      - db
-      - minio
+      db:
+        condition: service_healthy
+      minio:
+        condition: service_started
     environment:
       NODE_ENV: production
       DATABASE_URL: ${DATABASE_URL}
@@ -33,6 +35,12 @@ services:
       POSTGRES_DB: ${POSTGRES_DB}
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
 
   minio:
     image: minio/minio

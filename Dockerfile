@@ -14,6 +14,9 @@ COPY . .
 
 RUN npm run build
 
+# Compile migration script into a self-contained CJS bundle
+RUN npx esbuild scripts/migrate.ts --bundle --platform=node --format=cjs --outfile=scripts/migrate.js
+
 # Stage 3: Production runtime image
 FROM node:20-alpine AS runtime
 WORKDIR /app
@@ -29,6 +32,12 @@ COPY --from=build --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=build --chown=nextjs:nodejs /app/.next/static ./.next/static
 COPY --from=build --chown=nextjs:nodejs /app/public ./public
 
+# Copy compiled migration script, drizzle migration files, and entrypoint
+COPY --from=build --chown=nextjs:nodejs /app/scripts/migrate.js ./scripts/migrate.js
+COPY --from=build --chown=nextjs:nodejs /app/drizzle ./drizzle
+COPY --chown=nextjs:nodejs scripts/entrypoint.sh ./entrypoint.sh
+RUN chmod +x ./entrypoint.sh
+
 USER nextjs
 
 EXPOSE 3000
@@ -36,4 +45,4 @@ EXPOSE 3000
 ENV PORT=3000
 ENV HOSTNAME=0.0.0.0
 
-CMD ["node", "server.js"]
+CMD ["./entrypoint.sh"]
