@@ -54,6 +54,12 @@ export default async function TenantDetailPage({ params }: { params: { id: strin
           >
             Media Library
           </Link>
+          <Link
+            href={`/admin/tenants/${tenant.id}/addons`}
+            className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          >
+            Addons
+          </Link>
           <DeleteTenantButton tenantId={tenant.id} tenantName={tenant.name} />
         </div>
       </div>
