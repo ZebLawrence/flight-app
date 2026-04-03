@@ -127,4 +127,14 @@ describe('GET /favicon.ico', () => {
     expect(response.status).toBe(200);
     expect(response.headers.get('Cache-Control')).toContain('max-age=86400');
   });
+
+  it('returns 404 when default favicon file is missing', async () => {
+    mockResolveTenant.mockResolvedValue(null);
+    mockReadFile.mockRejectedValue(new Error('ENOENT: no such file or directory'));
+
+    const { GET } = await import('@/app/(tenant)/favicon.ico/route');
+    const response = await GET();
+
+    expect(response.status).toBe(404);
+  });
 });

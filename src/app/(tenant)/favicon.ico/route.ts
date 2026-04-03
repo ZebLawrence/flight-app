@@ -5,6 +5,21 @@ import { resolveTenant } from '@/lib/tenant/resolve';
 
 export const dynamic = 'force-dynamic';
 
+let defaultFaviconCache: Buffer | null = null;
+
+async function getDefaultFavicon(): Promise<Buffer | null> {
+  if (defaultFaviconCache) {
+    return defaultFaviconCache;
+  }
+  try {
+    const filePath = join(process.cwd(), 'public', 'default-favicon.ico');
+    defaultFaviconCache = await readFile(filePath);
+    return defaultFaviconCache;
+  } catch {
+    return null;
+  }
+}
+
 export async function GET() {
   const requestHeaders = headers();
   const hostname =
@@ -26,8 +41,11 @@ export async function GET() {
     });
   }
 
-  const defaultFaviconPath = join(process.cwd(), 'public', 'default-favicon.ico');
-  const fileBuffer = await readFile(defaultFaviconPath);
+  const fileBuffer = await getDefaultFavicon();
+
+  if (!fileBuffer) {
+    return new Response('Not found', { status: 404 });
+  }
 
   return new Response(fileBuffer, {
     status: 200,
