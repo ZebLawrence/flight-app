@@ -150,6 +150,48 @@ export async function seedPhase0() {
       },
     });
 
+  // Upsert forms addon definition
+  await db
+    .insert(addons)
+    .values({
+      key: 'forms',
+      name: 'Forms',
+      description: 'Form builder for tenant sites',
+      configSchema: { type: 'object', properties: {} },
+    })
+    .onConflictDoUpdate({
+      target: addons.key,
+      set: { name: 'Forms', description: 'Form builder for tenant sites' },
+    });
+
+  // Upsert gallery addon definition
+  await db
+    .insert(addons)
+    .values({
+      key: 'gallery',
+      name: 'Gallery',
+      description: 'Image gallery with lightbox support',
+      configSchema: { type: 'object', properties: {} },
+    })
+    .onConflictDoUpdate({
+      target: addons.key,
+      set: { name: 'Gallery', description: 'Image gallery with lightbox support' },
+    });
+
+  // Upsert calendar addon definition
+  await db
+    .insert(addons)
+    .values({
+      key: 'calendar',
+      name: 'Calendar',
+      description: 'Calendar booking widget',
+      configSchema: { type: 'object', properties: {} },
+    })
+    .onConflictDoUpdate({
+      target: addons.key,
+      set: { name: 'Calendar', description: 'Calendar booking widget' },
+    });
+
   // Configure analytics addon for demo tenant (GA4 enabled by default)
   await db
     .insert(tenantAddonConfigs)
