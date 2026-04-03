@@ -11,7 +11,7 @@ import { renderComponentTree } from '@/lib/renderer';
 import { resolveTenant } from '@/lib/tenant/resolve';
 import type { PageMeta } from '@/lib/types/component';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 60;
 
 type TenantPageProps = {
   params: {
