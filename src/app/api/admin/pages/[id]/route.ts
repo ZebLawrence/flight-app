@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { revalidateTag } from 'next/cache';
 import { validateSession } from '@/lib/auth';
 import { getPageById, updatePage, deletePage } from '@/lib/db/queries/pages';
 import { createVersion, pruneVersions } from '@/lib/db/queries/page-versions';
@@ -50,6 +51,9 @@ export async function PUT(
 
     // 4. Prune versions to keep last 10
     await pruneVersions(params.id, 10);
+
+    // 5. Invalidate cached pages for the tenant
+    revalidateTag(`tenant-${current.tenantId}`);
 
     return NextResponse.json(page);
   } catch (error: unknown) {

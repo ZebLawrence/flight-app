@@ -11,9 +11,14 @@ const mockCreateVersion = vi.hoisted(() => vi.fn());
 const mockGetVersionsByPage = vi.hoisted(() => vi.fn());
 const mockGetVersion = vi.hoisted(() => vi.fn());
 const mockPruneVersions = vi.hoisted(() => vi.fn());
+const mockRevalidateTag = vi.hoisted(() => vi.fn());
 
 vi.mock('@/lib/auth', () => ({
   validateSession: mockValidateSession,
+}));
+
+vi.mock('next/cache', () => ({
+  revalidateTag: mockRevalidateTag,
 }));
 
 vi.mock('@/lib/db/queries/pages', () => ({
