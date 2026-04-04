@@ -682,7 +682,7 @@ const portfolioHomeContent = {
           children: [
             {
               type: 'Heading',
-              props: { level: 1, text: 'Hello, I'm Alex — Designer & Developer', align: 'left' },
+              props: { level: 1, text: "Hello, I'm Alex — Designer & Developer", align: 'left' },
             },
             {
               type: 'Text',

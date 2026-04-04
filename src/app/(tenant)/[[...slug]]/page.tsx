@@ -156,10 +156,10 @@ export default async function TenantPage({ params, searchParams }: TenantPagePro
         </>
       )}
       {validConfig?.provider === 'plausible' && (
-        // domain is constrained to /^[a-zA-Z0-9.-]+$/ — React escapes the attribute value.
+        // trackingId is constrained to /^[a-zA-Z0-9.-]+$/ — React escapes the attribute value.
         <script
           defer
-          data-domain={validConfig.domain}
+          data-domain={validConfig.trackingId}
           src="https://plausible.io/js/script.js"
         />
       )}
