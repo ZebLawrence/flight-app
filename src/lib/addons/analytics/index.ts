@@ -45,3 +45,23 @@ export const analyticsAddon: AddonModule = {
   key: 'analytics',
   name: 'Analytics',
 };
+
+export function isAnalyticsConfig(config: unknown): config is AnalyticsAddonConfig {
+  if (typeof config !== 'object' || config === null) return false;
+  const c = config as Record<string, unknown>;
+  if (c.provider === 'ga4') {
+    return typeof c.trackingId === 'string' && GA4_ID_RE.test(c.trackingId);
+  }
+  if (c.provider === 'plausible') {
+    return (
+      typeof c.trackingId === 'string' &&
+      c.trackingId.length > 0 &&
+      c.trackingId.length <= 253 &&
+      DOMAIN_RE.test(c.trackingId)
+    );
+  }
+  if (c.provider === 'custom') {
+    return typeof c.customScript === 'string' && c.customScript.length > 0;
+  }
+  return false;
+}
