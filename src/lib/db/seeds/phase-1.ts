@@ -46,8 +46,9 @@ const phase1HomeContent = {
           type: 'Container',
           props: { maxWidth: '900px' },
           children: [
-            { type: 'Heading', props: { level: 1, text: 'Welcome to Demo Business', align: 'center' } },
-            { type: 'Text', props: { content: 'The all-in-one platform to power your online presence. Fast, flexible, and built for growth.' } },
+            { type: 'Heading', props: { level: 1, text: 'Hello World', align: 'center' } },
+            { type: 'Heading', props: { level: 2, text: 'Welcome to Demo Business', align: 'center' } },
+            { type: 'Text', props: { content: 'Welcome to demo business — the all-in-one platform to power your online presence. Fast, flexible, and built for growth.' } },
             { type: 'Button', props: { label: 'Get Started', href: '#features', variant: 'primary' } },
           ],
         },
@@ -301,7 +302,7 @@ export async function seedPhase1() {
     await db.insert(pages).values({
       tenantId: demoTenant.id,
       slug: '',
-      title: 'Home',
+      title: 'Hello World',
       published: true,
       sortOrder: 0,
       content: phase1HomeContent,
@@ -310,7 +311,7 @@ export async function seedPhase1() {
     await db
       .update(pages)
       .set({
-        title: 'Home',
+        title: 'Hello World',
         published: true,
         sortOrder: 0,
         content: phase1HomeContent,
