@@ -1,0 +1,44 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - alert [ref=e2]
+  - generic [ref=e3]:
+    - generic [ref=e4]:
+      - heading "Tenants" [level=1] [ref=e5]
+      - link "Create tenant" [ref=e6] [cursor=pointer]:
+        - /url: /admin/tenants/new
+    - table [ref=e8]:
+      - rowgroup [ref=e9]:
+        - row "Name Slug Custom Domain Created" [ref=e10]:
+          - columnheader "Name" [ref=e11]
+          - columnheader "Slug" [ref=e12]
+          - columnheader "Custom Domain" [ref=e13]
+          - columnheader "Created" [ref=e14]
+          - columnheader [ref=e15]
+      - rowgroup [ref=e16]:
+        - row "Internal Test Tenant internal localhost 4/4/2026 View / Edit" [ref=e17]:
+          - cell "Internal Test Tenant" [ref=e18]
+          - cell "internal" [ref=e19]
+          - cell "localhost" [ref=e20]
+          - cell "4/4/2026" [ref=e21]
+          - cell "View / Edit" [ref=e22]:
+            - link "View / Edit" [ref=e23] [cursor=pointer]:
+              - /url: /admin/tenants/2a8202d8-143b-4bb8-84c7-54554b2ee559
+        - row "Demo Business demo — 4/4/2026 View / Edit" [ref=e24]:
+          - cell "Demo Business" [ref=e25]
+          - cell "demo" [ref=e26]
+          - cell "—" [ref=e27]
+          - cell "4/4/2026" [ref=e28]
+          - cell "View / Edit" [ref=e29]:
+            - link "View / Edit" [ref=e30] [cursor=pointer]:
+              - /url: /admin/tenants/ecb24ebd-d25f-45d6-a5c5-5d5a19216430
+        - row "Workflow Test workflow-test — 4/4/2026 View / Edit" [ref=e31]:
+          - cell "Workflow Test" [ref=e32]
+          - cell "workflow-test" [ref=e33]
+          - cell "—" [ref=e34]
+          - cell "4/4/2026" [ref=e35]
+          - cell "View / Edit" [ref=e36]:
+            - link "View / Edit" [ref=e37] [cursor=pointer]:
+              - /url: /admin/tenants/7fe6210a-d8d4-4927-bdff-454e1d411fca
+```
