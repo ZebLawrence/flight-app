@@ -23,8 +23,9 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 
-# Run as non-root user for security
-RUN addgroup --system --gid 1001 nodejs && \
+# Install curl for health checks and run as non-root user for security
+RUN apk add --no-cache curl && \
+    addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 nextjs
 
 # Copy only the standalone output and static assets
