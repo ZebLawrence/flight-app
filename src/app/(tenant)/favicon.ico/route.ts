@@ -47,7 +47,7 @@ export async function GET() {
     return new Response('Not found', { status: 404 });
   }
 
-  return new Response(fileBuffer, {
+  return new Response(new Uint8Array(fileBuffer), {
     status: 200,
     headers: {
       'Content-Type': 'image/x-icon',
